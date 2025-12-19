@@ -65,7 +65,8 @@ mongosh --eval "db.runCommand({ ping: 1 })"
 5. Get your connection string (click "Connect" → "Connect your application")
 6. Update `backend/.env` with your connection string:
    ```
-   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/cavs-betting?retryWrites=true&w=majority
+   # Replace <USERNAME>, <PASSWORD>, and <CLUSTER> with your actual values
+   MONGODB_URI=mongodb+srv://<USERNAME>:<PASSWORD>@<CLUSTER>.mongodb.net/cavs-betting?retryWrites=true&w=majority
    ```
 
 > 💡 **Note:** For detailed setup instructions including Docker option, see [SETUP.md](./SETUP.md)
