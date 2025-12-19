@@ -90,6 +90,28 @@ NEXT_PUBLIC_API_URL=http://localhost:3001
 
 ## Quick Start
 
+### Option 1: Using Makefile (Recommended)
+
+```bash
+# 1. Ensure MongoDB is running (see MongoDB Setup above)
+
+# 2. Install dependencies
+make install
+
+# 3. Configure environment files
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env.local
+# Edit .env files and add your MONGODB_URI and API keys
+
+# 4. Start both frontend and backend
+make dev
+
+# To stop all services
+make stop
+```
+
+### Option 2: Manual Setup
+
 ```bash
 # 1. Ensure MongoDB is running (see MongoDB Setup above)
 
