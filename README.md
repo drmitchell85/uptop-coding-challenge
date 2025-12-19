@@ -5,13 +5,15 @@ A full-stack monorepo application that lets authenticated users place bets on Cl
 ## Tech Stack
 
 ### Frontend
-- Next.js (TypeScript)
-- Tailwind CSS
+- Next.js 14.2.18 (TypeScript) - Compatible with Node.js 18+
+- React 18
+- Tailwind CSS 3.4
 - next-auth for authentication
 
 ### Backend
-- NestJS (TypeScript)
+- NestJS 11 (TypeScript)
 - MongoDB with Mongoose
+- @nestjs/config for environment management
 - The Odds API integration
 
 ## Project Structure
@@ -25,11 +27,36 @@ uptop-coding-challenge/
 
 ## Prerequisites
 
-- Node.js (v18 or higher)
-- MongoDB Atlas account (free tier) - [Sign up here](https://www.mongodb.com/cloud/atlas/register)
+- Node.js v18+ (v20+ recommended)
+- MongoDB (local installation or MongoDB Atlas)
 - The Odds API key (get one at https://the-odds-api.com/)
 
-## MongoDB Setup (MongoDB Atlas - Recommended)
+## MongoDB Setup
+
+### Option 1: Local MongoDB (Tested & Recommended for Development)
+
+**Ubuntu/Debian:**
+```bash
+sudo apt-get update
+sudo apt-get install -y mongodb
+sudo systemctl start mongodb
+sudo systemctl enable mongodb
+```
+
+**macOS:**
+```bash
+brew tap mongodb/brew
+brew install mongodb-community
+brew services start mongodb-community
+```
+
+**Verify MongoDB is running:**
+```bash
+mongosh --eval "db.runCommand({ ping: 1 })"
+# Should return: { ok: 1 }
+```
+
+### Option 2: MongoDB Atlas (Cloud - Free Tier)
 
 1. Create a free MongoDB Atlas account at https://www.mongodb.com/cloud/atlas/register
 2. Create a new cluster (free M0 tier)
@@ -40,6 +67,8 @@ uptop-coding-challenge/
    ```
    MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/cavs-betting?retryWrites=true&w=majority
    ```
+
+> 💡 **Note:** For detailed setup instructions including Docker option, see [SETUP.md](./SETUP.md)
 
 ## Environment Variables
 
@@ -58,25 +87,79 @@ NEXTAUTH_URL=http://localhost:3000
 NEXT_PUBLIC_API_URL=http://localhost:3001
 ```
 
-## Getting Started
+## Quick Start
 
-### Backend
 ```bash
+# 1. Ensure MongoDB is running (see MongoDB Setup above)
+
+# 2. Backend setup
 cd backend
 npm install
+cp .env.example .env
+# Edit .env and add your MONGODB_URI and API keys
 npm run start:dev
-```
 
-### Frontend
-```bash
+# 3. Frontend setup (in a new terminal)
 cd frontend
 npm install
+cp .env.example .env.local
+# Edit .env.local and add your secrets
 npm run dev
 ```
 
-The frontend will be available at `http://localhost:3000` and the backend at `http://localhost:3001`.
+**Access the application:**
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:3001
 
-## Features
+## Testing the Setup
+
+### Verify MongoDB Connection
+```bash
+# Check if MongoDB is running
+mongosh --eval "db.runCommand({ ping: 1 })"
+
+# Or check the process
+pgrep mongod
+```
+
+### Verify Backend
+```bash
+# Backend should log: "✅ MongoDB connected successfully"
+# Test the API
+curl http://localhost:3001
+# Should return: "Hello World!"
+```
+
+### Verify Frontend
+```bash
+# Open browser to http://localhost:3000
+# You should see: "🏀 Cavaliers Betting" page
+```
+
+## Implementation Status
+
+### ✅ Completed (Phase 1)
+- **Backend Infrastructure**
+  - NestJS application with modular architecture (Auth, Games, Bets, Database)
+  - MongoDB connection with Mongoose
+  - Environment configuration with @nestjs/config
+  - CORS enabled for frontend communication
+  - Error handling and connection logging
+
+- **Frontend Infrastructure**
+  - Next.js 14 application with App Router
+  - TypeScript configuration
+  - Tailwind CSS 3 styling
+  - Responsive layout foundation
+  - Inter font integration
+
+- **Development Setup**
+  - Monorepo structure
+  - MongoDB local installation tested
+  - Both applications running and verified
+  - Comprehensive setup documentation
+
+### 🚧 Planned Features (Phases 2-7)
 
 - 🔐 User authentication with next-auth
 - 🏀 Fetch next Cleveland Cavaliers game odds from The Odds API
@@ -85,7 +168,7 @@ The frontend will be available at `http://localhost:3000` and the backend at `ht
 - ⚡ Admin settlement of bets with automatic point awards
 - 🎯 Win 100 points for each correct bet
 
-## API Endpoints
+## Planned API Endpoints
 
 ### Games
 - `GET /games/next` - Get the next Cavaliers game and odds
@@ -104,35 +187,39 @@ The frontend will be available at `http://localhost:3000` and the backend at `ht
 
 This project is broken into phases, with each phase containing multiple commits representing incremental progress.
 
-### Phase 1: Project Setup & Infrastructure
+### Phase 1: Project Setup & Infrastructure ✅
 
-**Commit 1.1: Initialize monorepo structure**
-- [ ] Create root directory structure
-- [ ] Add .gitignore for Node.js, TypeScript, and environment files
-- [ ] Create this README.md with project overview
+**Commit 1.1: Initialize monorepo structure** ✅
+- [x] Create root directory structure
+- [x] Add .gitignore for Node.js, TypeScript, and environment files
+- [x] Create this README.md with project overview
 
-**Commit 1.2: Initialize NestJS backend**
-- [ ] Run `nest new backend` with TypeScript
-- [ ] Configure tsconfig.json
-- [ ] Setup basic project structure (modules, controllers, services)
-- [ ] Add backend-specific .gitignore
+**Commit 1.2: Initialize NestJS backend** ✅
+- [x] Run `nest new backend` with TypeScript
+- [x] Configure tsconfig.json
+- [x] Setup basic project structure (modules, controllers, services)
+- [x] Add backend-specific .gitignore
 
-**Commit 1.3: Initialize Next.js frontend**
-- [ ] Run `npx create-next-app@latest frontend` with TypeScript and Tailwind
-- [ ] Configure Tailwind CSS
-- [ ] Setup basic project structure
-- [ ] Add frontend-specific .gitignore
+**Commit 1.3: Initialize Next.js frontend** ✅
+- [x] Run `npx create-next-app@latest frontend` with TypeScript and Tailwind
+- [x] Configure Tailwind CSS v3 (compatible with Node 18)
+- [x] Setup basic project structure
+- [x] Add frontend-specific .gitignore
 
-**Commit 1.4: Setup MongoDB connection**
-- [ ] Install @nestjs/mongoose and mongoose in backend
-- [ ] Create database module
-- [ ] Configure MongoDB connection with environment variables
-- [ ] Add connection error handling
+**Commit 1.4: Setup MongoDB connection** ✅
+- [x] Install @nestjs/mongoose and mongoose in backend
+- [x] Create database module
+- [x] Configure MongoDB connection with environment variables
+- [x] Add connection error handling
+- [x] Test MongoDB connection locally
+- [x] Create SETUP.md with installation instructions
 
-**Commit 1.5: Environment configuration**
-- [ ] Create .env.example files for both frontend and backend
-- [ ] Setup environment validation in backend
-- [ ] Add environment configuration to documentation
+**Commit 1.5: Environment configuration & Testing** (Current)
+- [x] Create .env.example files for both frontend and backend
+- [x] Setup environment validation in backend
+- [x] Add environment configuration to documentation
+- [x] Test both frontend and backend applications
+- [x] Update README with accurate version information
 
 ---
 
@@ -401,6 +488,65 @@ If user selected Opponent:
 ```
 
 Points awarded: **100 points per winning bet**
+
+## Technical Notes
+
+### Node.js Version Compatibility
+
+This project is configured for **Node.js 18+** compatibility:
+
+- **Next.js 14.2.18** (LTS) - Works with Node 18+
+- **React 18** - Stable version with broad compatibility
+- **Tailwind CSS 3.4** - Standard PostCSS configuration
+- **NestJS 11** - Requires Node 18+ (recommends Node 20+)
+
+**If you have Node.js 20+**, you can optionally upgrade to:
+- Next.js 15+ or 16+ for latest features
+- React 19 for improved performance
+- Tailwind CSS 4 for better PostCSS integration
+
+### Troubleshooting
+
+#### MongoDB Connection Issues
+```bash
+# Check if MongoDB is running
+sudo systemctl status mongodb  # Linux
+brew services list | grep mongodb  # macOS
+
+# Check if port 27017 is in use
+ss -tuln | grep 27017
+
+# Test connection
+mongosh --eval "db.runCommand({ ping: 1 })"
+```
+
+#### Port Already in Use
+```bash
+# Find and kill process on port 3000 (frontend)
+lsof -ti:3000 | xargs kill -9
+
+# Find and kill process on port 3001 (backend)
+lsof -ti:3001 | xargs kill -9
+```
+
+#### Module Not Found Errors
+```bash
+# Clean install
+cd backend  # or frontend
+rm -rf node_modules package-lock.json
+npm install
+```
+
+#### Next.js Version Warnings
+The project uses Next.js 14 for Node 18 compatibility. Some security warnings may appear - these are acknowledged trade-offs for broader compatibility. For production use, consider upgrading to Node 20+ and Next.js 15+.
+
+### Development Tips
+
+- **Hot Reload**: Both applications support hot reload - changes will reflect automatically
+- **TypeScript**: Strict mode is disabled for easier development; enable in tsconfig.json for production
+- **MongoDB Database**: The database `cavs-betting` is created automatically on first connection
+- **API Testing**: Use tools like Postman, Insomnia, or curl to test backend endpoints
+- **Environment Variables**: Never commit .env files - always use .env.example as template
 
 ## Contributing
 
