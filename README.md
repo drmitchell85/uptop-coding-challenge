@@ -226,29 +226,35 @@ This project is broken into phases, with each phase containing multiple commits 
 
 ### Phase 2: Backend - Data Models & Database Schema
 
-**Commit 2.1: Create User model**
-- [ ] Define User schema with Mongoose
-- [ ] Create User interface/DTO
-- [ ] Add points field for tracking earnings
-- [ ] Setup User module
+**Commit 2.1: Create User model** ✅
+- [x] Define User schema with Mongoose
+- [x] Create User interface/DTO
+- [x] Add points field for tracking earnings
+- [x] Setup User module with MongooseModule
+- [x] Add comprehensive documentation
 
-**Commit 2.2: Create Game model**
-- [ ] Define Game schema (gameId, teams, startTime, spread, status, scores)
-- [ ] Create Game interface/DTO
-- [ ] Add validation for game data
-- [ ] Setup Games module
+**Commit 2.2: Create Game model** ✅
+- [x] Define Game schema (gameId, teams, startTime, spread, status, scores)
+- [x] Create Game interface/DTO (CreateGameDto, SettleGameDto)
+- [x] Add GameStatus enum and validation
+- [x] Setup Games module with MongooseModule
+- [x] Add comprehensive documentation with point spread examples
 
-**Commit 2.3: Create Bet model**
-- [ ] Define Bet schema (userId, gameId, selection, status)
-- [ ] Create Bet interface/DTO
-- [ ] Add references to User and Game
-- [ ] Setup Bets module
+**Commit 2.3: Create Bet model** ✅
+- [x] Define Bet schema (userId, gameId, selection, status)
+- [x] Create Bet interface/DTO (CreateBetDto)
+- [x] Add references to User and Game with ObjectId
+- [x] Setup Bets module with MongooseModule
+- [x] Add BetSelection and BetStatus enums
+- [x] Add comprehensive documentation with settlement logic
 
-**Commit 2.4: Add database indexes and validations**
-- [ ] Add unique indexes where needed
-- [ ] Add validation rules to schemas
-- [ ] Create custom validators for bet selections
-- [ ] Add timestamps to all models
+**Commit 2.4: Add database indexes and validations** (Current)
+- [x] Add unique indexes (email, gameId, userId+gameId compound)
+- [x] Add indexes for query optimization (startTime, status)
+- [x] Add enum validation for selections and statuses
+- [x] Add timestamps to all models (createdAt, updatedAt)
+- [ ] Test all models with MongoDB
+- [ ] Verify unique constraints work correctly
 
 ---
 
