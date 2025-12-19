@@ -2,7 +2,7 @@
 .claude/
 
 # Project Documentation
-Uptop-Coding-Challenge.pdf
+*.pdf
 
 # Dependencies
 node_modules/
