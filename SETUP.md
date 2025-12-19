@@ -78,8 +78,8 @@ nano .env  # or use your preferred editor
 # For local MongoDB
 MONGODB_URI=mongodb://localhost:27017/cavs-betting
 
-# OR for MongoDB Atlas
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/cavs-betting
+# OR for MongoDB Atlas (replace <USERNAME>, <PASSWORD>, and <CLUSTER> with your values)
+MONGODB_URI=mongodb+srv://<USERNAME>:<PASSWORD>@<CLUSTER>.mongodb.net/cavs-betting
 
 # Get your free API key from https://the-odds-api.com/
 ODDS_API_KEY=your_actual_api_key_here
