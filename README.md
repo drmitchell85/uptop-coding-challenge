@@ -26,8 +26,20 @@ uptop-coding-challenge/
 ## Prerequisites
 
 - Node.js (v18 or higher)
-- MongoDB (local or Atlas)
+- MongoDB Atlas account (free tier) - [Sign up here](https://www.mongodb.com/cloud/atlas/register)
 - The Odds API key (get one at https://the-odds-api.com/)
+
+## MongoDB Setup (MongoDB Atlas - Recommended)
+
+1. Create a free MongoDB Atlas account at https://www.mongodb.com/cloud/atlas/register
+2. Create a new cluster (free M0 tier)
+3. Create a database user with username and password
+4. Whitelist your IP address (or use 0.0.0.0/0 for testing)
+5. Get your connection string (click "Connect" → "Connect your application")
+6. Update `backend/.env` with your connection string:
+   ```
+   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/cavs-betting?retryWrites=true&w=majority
+   ```
 
 ## Environment Variables
 
