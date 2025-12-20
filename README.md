@@ -421,12 +421,15 @@ This project is broken into phases, with each phase containing multiple commits 
 - [x] Add spread explanation helper
 - [x] Test both endpoints (public and authenticated)
 
-**Commit 4.3: Implement Bets endpoints**
-- [ ] Create BetsController
-- [ ] Implement POST /bets endpoint (create bet)
-- [ ] Implement GET /bets endpoint (get user bets)
-- [ ] Add validation for bet placement rules
-- [ ] Prevent duplicate bets per game per user
+**Commit 4.3: Implement Bets endpoints** ✅
+- [x] Create BetsController
+- [x] Create BetsService with business logic
+- [x] Implement POST /bets endpoint (create bet)
+- [x] Implement GET /bets endpoint (get user bets)
+- [x] Add validation for bet placement rules (game exists, not started, status is upcoming)
+- [x] Prevent duplicate bets per game per user (compound unique index)
+- [x] Add bet response DTOs with populated game data
+- [x] Test all endpoints (auth, duplicate prevention, retrieval)
 
 **Commit 4.4: Implement admin settlement endpoint**
 - [ ] Create POST /games/:gameId/settle endpoint
