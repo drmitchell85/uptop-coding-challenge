@@ -511,11 +511,14 @@ This project is broken into phases, with each phase containing multiple commits 
 
 ### Phase 6: Frontend - Game Display & Betting Interface
 
-**Commit 6.1: Create main page layout**
-- [ ] Create home page component
-- [ ] Add navigation/header with auth status
-- [ ] Setup responsive layout with Tailwind
-- [ ] Add loading and error states
+**Commit 6.1: Create main page layout** ✅
+- [x] Create home page component
+- [x] Add navigation/header with auth status
+- [x] Setup responsive layout with Tailwind
+- [x] Add loading and error states
+- [x] Create 3-column grid layout (game display, betting form, bet history)
+- [x] Add quick stats section for user metrics
+- [x] Implement responsive design for mobile/tablet/desktop
 
 **Commit 6.2: Implement game display**
 - [ ] Create GameCard component
