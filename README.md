@@ -553,11 +553,17 @@ This project is broken into phases, with each phase containing multiple commits 
 - [x] Add loading, error, and empty states
 - [x] Update quick stats with real data (total bets, wins, win rate)
 
-**Commit 6.5: Add user points display**
-- [ ] Create PointsDisplay component
-- [ ] Fetch and show total user points
-- [ ] Add points animation on wins
-- [ ] Display points history
+**Commit 6.5: Add user points display** ✅
+- [x] Create PointsDisplay component with two variants (compact/full)
+- [x] Fetch and show total user points from session
+- [x] Add points animation on wins using CSS transitions
+- [x] Display points history (recent transactions)
+- [x] Show transaction details (game, date/time, points earned)
+- [x] Add compact variant for prominent display on home page
+- [x] Add full variant with transaction history in sidebar
+- [x] Include empty state for no transactions
+- [x] Calculate and display total points earned
+- [x] Style with gold gradient matching Cavaliers branding
 
 ---
 

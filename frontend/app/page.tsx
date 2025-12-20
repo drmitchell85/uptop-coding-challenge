@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/Header';
 import { GameCard } from '@/components/games/GameCard';
 import { BetForm } from '@/components/bets/BetForm';
 import { BetsList } from '@/components/bets/BetsList';
+import { PointsDisplay } from '@/components/points/PointsDisplay';
 import { useNextGame } from '@/lib/hooks/useGames';
 import { useBets } from '@/lib/hooks/useBets';
 import Link from 'next/link';
@@ -80,13 +81,15 @@ export default function Home() {
           ) : (
             <div>
               {/* Welcome Section */}
-              <div className="text-center mb-8">
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">
+              <div className="text-center mb-6">
+                <h1 className="text-4xl font-bold text-gray-900 mb-4">
                   Welcome back, {session.user.name}! 🏀
                 </h1>
-                <p className="text-lg text-gray-600">
-                  You have <span className="font-bold text-indigo-600">{session.user.points.toLocaleString()}</span> points
-                </p>
+              </div>
+
+              {/* Points Display Section */}
+              <div className="mb-6 max-w-md mx-auto">
+                <PointsDisplay variant="compact" />
               </div>
 
               {/* Main Content Grid */}
@@ -147,15 +150,20 @@ export default function Home() {
                   </section>
                 </div>
 
-                {/* Right Column: Betting History */}
-                <div className="lg:col-span-1">
+                {/* Right Column: Betting History & Points */}
+                <div className="lg:col-span-1 space-y-6">
                   {/* User Bets Section - Phase 6.4 */}
-                  <section className="bg-white rounded-xl shadow-lg p-6 sticky top-6">
+                  <section className="bg-white rounded-xl shadow-lg p-6 lg:sticky lg:top-6">
                     <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
                       <span className="mr-2">📊</span>
                       Your Bets
                     </h2>
                     <BetsList />
+                  </section>
+
+                  {/* Points Display Section - Phase 6.5 */}
+                  <section>
+                    <PointsDisplay variant="full" />
                   </section>
                 </div>
               </div>
