@@ -152,9 +152,21 @@ npm run dev
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:3001
 
-## Testing the Setup
+## Testing
 
-### Verify MongoDB Connection
+For comprehensive end-to-end testing documentation, see **[TESTING.md](./TESTING.md)**.
+
+The testing documentation covers:
+- Complete user flows (signup → bet → settlement)
+- Admin settlement testing
+- Edge cases and error handling
+- Points calculation verification
+- UI/UX testing across devices
+- Session management and data integrity
+
+### Quick Setup Verification
+
+#### Verify MongoDB Connection
 ```bash
 # Check if MongoDB is running
 mongosh --eval "db.runCommand({ ping: 1 })"
@@ -714,11 +726,15 @@ This project is broken into phases, with each phase containing multiple commits 
 - [x] Disable automatic dark mode detection (darkMode: 'class')
 - [x] Update RESET button messaging and confirmation dialog
 
-**Commit 7.3: End-to-end testing**
-- [ ] Test complete user flow (signup → view game → place bet)
-- [ ] Test admin settlement flow
-- [ ] Test edge cases (no upcoming games, duplicate bets)
-- [ ] Verify points are awarded correctly
+**Commit 7.3: End-to-end testing** ✅
+- [x] Test complete user flow (signup → view game → place bet)
+- [x] Test admin settlement flow with final score settlement
+- [x] Test edge cases (duplicate bets, invalid games, RESET functionality)
+- [x] Verify points are awarded correctly (cost: 100, payout: 200)
+- [x] Test session management and persistence
+- [x] Verify data integrity and foreign key constraints
+- [x] Test UI/UX across different screen sizes
+- [x] Document all test scenarios and results in TESTING.md
 
 **Commit 7.4: UI polish and responsive design**
 - [ ] Refine Tailwind styling
