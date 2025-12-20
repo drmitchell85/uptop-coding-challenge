@@ -1,8 +1,16 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Game, GameDocument, GameStatus } from './schemas/game.schema';
 import { OddsApiService, OddsApiGame } from '../odds-api/odds-api.service';
+import { Bet, BetDocument, BetStatus, BetSelection } from '../bets/schemas/bet.schema';
+import { User, UserDocument } from '../auth/schemas/user.schema';
+import { SettleGameDto } from './dto/settle-game.dto';
 
 /**
  * Interface for the mapped game data ready to be stored
@@ -22,6 +30,8 @@ export class GamesService {
 
   constructor(
     @InjectModel(Game.name) private gameModel: Model<GameDocument>,
+    @InjectModel(Bet.name) private betModel: Model<BetDocument>,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
     private readonly oddsApiService: OddsApiService,
   ) {}
 
@@ -276,6 +286,131 @@ export class GamesService {
       return games;
     } catch (error) {
       this.logger.error('❌ Failed to retrieve upcoming games:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Settle a game with final scores and award points to winners
+   * @param gameId - The game's ObjectId
+   * @param settleGameDto - Final scores
+   * @returns Settlement results
+   */
+  async settleGame(gameId: string, settleGameDto: SettleGameDto) {
+    try {
+      this.logger.log(`🎯 Settling game ${gameId}...`);
+
+      // Find the game
+      const game = await this.gameModel.findById(gameId);
+
+      if (!game) {
+        throw new NotFoundException(`Game with ID ${gameId} not found`);
+      }
+
+      // Validate game is not already settled
+      if (game.status === GameStatus.FINISHED) {
+        throw new BadRequestException('Game has already been settled');
+      }
+
+      // Update game with final scores and mark as finished
+      game.finalHomeScore = settleGameDto.finalHomeScore;
+      game.finalAwayScore = settleGameDto.finalAwayScore;
+      game.status = GameStatus.FINISHED;
+      await game.save();
+
+      this.logger.log(
+        `📊 Game settled: ${game.awayTeam} ${settleGameDto.finalAwayScore} @ ${game.homeTeam} ${settleGameDto.finalHomeScore}`,
+      );
+
+      // Get all bets for this game
+      const bets = await this.betModel.find({ gameId: game._id });
+
+      this.logger.log(`🎲 Found ${bets.length} bet(s) to settle`);
+
+      // Calculate the point differential (from home team's perspective)
+      const homePointDifferential =
+        settleGameDto.finalHomeScore - settleGameDto.finalAwayScore;
+
+      // Determine if Cavaliers are home or away
+      const isCavaliersHome = game.homeTeam === 'Cleveland Cavaliers';
+
+      // Calculate Cavaliers' actual point differential
+      const cavaliersPointDifferential = isCavaliersHome
+        ? homePointDifferential
+        : -homePointDifferential;
+
+      // Determine the result against the spread
+      // Cavaliers cover if: (cavaliersActual + spread) > 0
+      const coverMargin = cavaliersPointDifferential + game.spread;
+
+      this.logger.log(
+        `📈 Cavaliers differential: ${cavaliersPointDifferential}, Spread: ${game.spread}, Cover margin: ${coverMargin}`,
+      );
+
+      // Settle each bet
+      let wonCount = 0;
+      let lostCount = 0;
+      let pushCount = 0;
+
+      for (const bet of bets) {
+        let betStatus: BetStatus;
+        let pointsToAward = 0;
+
+        if (coverMargin === 0) {
+          // Push - tie against the spread
+          betStatus = BetStatus.PUSH;
+          pushCount++;
+        } else if (coverMargin > 0) {
+          // Cavaliers covered the spread
+          if (bet.selection === BetSelection.CAVALIERS) {
+            betStatus = BetStatus.WON;
+            pointsToAward = 100;
+            wonCount++;
+          } else {
+            betStatus = BetStatus.LOST;
+            lostCount++;
+          }
+        } else {
+          // Cavaliers did not cover the spread
+          if (bet.selection === BetSelection.OPPONENT) {
+            betStatus = BetStatus.WON;
+            pointsToAward = 100;
+            wonCount++;
+          } else {
+            betStatus = BetStatus.LOST;
+            lostCount++;
+          }
+        }
+
+        // Update bet
+        bet.status = betStatus;
+        bet.pointsAwarded = pointsToAward;
+        await bet.save();
+
+        // Award points to user if they won
+        if (pointsToAward > 0) {
+          await this.userModel.findByIdAndUpdate(bet.userId, {
+            $inc: { points: pointsToAward },
+          });
+          this.logger.log(`💰 Awarded ${pointsToAward} points to user ${bet.userId}`);
+        }
+      }
+
+      this.logger.log(
+        `✅ Settlement complete: ${wonCount} won, ${lostCount} lost, ${pushCount} push`,
+      );
+
+      return {
+        game,
+        betsSettled: {
+          total: bets.length,
+          won: wonCount,
+          lost: lostCount,
+          push: pushCount,
+        },
+      };
+    } catch (error) {
+      this.logger.error('❌ Failed to settle game:', error);
       throw error;
     }
   }

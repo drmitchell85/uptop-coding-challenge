@@ -431,12 +431,16 @@ This project is broken into phases, with each phase containing multiple commits 
 - [x] Add bet response DTOs with populated game data
 - [x] Test all endpoints (auth, duplicate prevention, retrieval)
 
-**Commit 4.4: Implement admin settlement endpoint**
-- [ ] Create POST /games/:gameId/settle endpoint
-- [ ] Add admin authentication check
-- [ ] Implement bet result calculation logic
-- [ ] Update bet statuses (won/lost/push)
-- [ ] Award points to winners
+**Commit 4.4: Implement admin settlement endpoint** ✅
+- [x] Create POST /games/:gameId/settle endpoint
+- [x] Add admin authentication check (JwtAuthGuard + AdminGuard)
+- [x] Implement bet result calculation logic (spread coverage algorithm)
+- [x] Update bet statuses (won/lost/push)
+- [x] Award points to winners (100 points per win)
+- [x] Add settlement method to GamesService
+- [x] Create settlement DTOs
+- [x] Resolve circular dependency between GamesModule and BetsModule
+- [x] Test settlement endpoint with admin auth
 
 **Commit 4.5: Add API documentation and error handling**
 - [ ] Add Swagger/OpenAPI documentation (optional)

@@ -6,15 +6,22 @@ import {
   HttpException,
   HttpStatus,
   Logger,
+  Param,
+  Body,
 } from '@nestjs/common';
 import { GamesService } from './games.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AdminGuard } from '../auth/guards/admin.guard';
 import {
   GameResponseDto,
   GameSuccessResponseDto,
   GameErrorResponseDto,
   GameApiResponse,
 } from './dto/game-response.dto';
+import {
+  SettleGameDto,
+  SettleGameApiResponse,
+} from './dto/settle-game.dto';
 
 @Controller('games')
 export class GamesController {
@@ -173,6 +180,78 @@ export class GamesController {
           success: false,
           error: error.message || 'Failed to sync next game',
           message: 'An error occurred while syncing the next game',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * POST /games/:gameId/settle
+   * Settle a game with final scores and award points to winners
+   * Requires admin authentication
+   *
+   * @param gameId - The game's ObjectId
+   * @param settleGameDto - Final scores
+   * @returns Settlement results
+   */
+  @Post(':gameId/settle')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  async settleGame(
+    @Param('gameId') gameId: string,
+    @Body() settleGameDto: SettleGameDto,
+  ): Promise<SettleGameApiResponse> {
+    try {
+      this.logger.log(`🎯 Admin settling game ${gameId}...`);
+
+      // Settle the game
+      const result = await this.gamesService.settleGame(gameId, settleGameDto);
+
+      return {
+        success: true,
+        message: 'Game settled successfully',
+        game: {
+          id: result.game._id.toString(),
+          gameId: result.game.gameId,
+          homeTeam: result.game.homeTeam,
+          awayTeam: result.game.awayTeam,
+          finalHomeScore: result.game.finalHomeScore!,
+          finalAwayScore: result.game.finalAwayScore!,
+          status: result.game.status,
+        },
+        betsSettled: result.betsSettled,
+      };
+    } catch (error) {
+      this.logger.error('❌ Failed to settle game:', error);
+
+      // Handle specific error types
+      if (error.status === HttpStatus.NOT_FOUND) {
+        throw new HttpException(
+          {
+            success: false,
+            error: error.message,
+            message: 'Game not found',
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      if (error.status === HttpStatus.BAD_REQUEST) {
+        throw new HttpException(
+          {
+            success: false,
+            error: error.message,
+            message: 'Invalid settlement data',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      throw new HttpException(
+        {
+          success: false,
+          error: error.message || 'Failed to settle game',
+          message: 'An error occurred while settling the game',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
