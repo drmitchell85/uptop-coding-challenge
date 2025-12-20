@@ -79,7 +79,25 @@ MONGODB_URI=mongodb://localhost:27017/cavs-betting
 ODDS_API_KEY=your_odds_api_key_here
 ADMIN_API_KEY=your_admin_secret_key
 PORT=3001
+
+# Mock Data (for testing when no real games are scheduled)
+USE_MOCK_DATA=true
 ```
+
+**Important - Mock Data Mode:**
+
+The `USE_MOCK_DATA` environment variable enables automatic test data generation when no real Cavaliers games are scheduled. This is **essential for:**
+- **Testing during NBA off-season** (April-October)
+- **Demos and evaluation** - works anytime, regardless of game schedule
+- **Development** - immediate testing without waiting for scheduled games
+
+When enabled:
+- Backend automatically creates 3 realistic mock games on startup if no real games exist
+- Games include varied scenarios (favored, underdog, close spread)
+- Full betting flow works exactly like real games
+- Mock games can be settled using the admin endpoint
+
+**Recommended:** Keep `USE_MOCK_DATA=true` in your `.env` file for development and evaluation.
 
 ### Frontend (.env.local)
 ```
@@ -157,6 +175,28 @@ curl http://localhost:3001
 ```bash
 # Open browser to http://localhost:3000
 # You should see: "🏀 Cavaliers Betting" page
+```
+
+### Verify Mock Data (if USE_MOCK_DATA=true)
+```bash
+# Check backend logs for mock game creation
+# You should see: "✅ Created 3 mock games for testing:"
+
+# Verify games are in database
+curl http://localhost:3001/games/next | python3 -m json.tool
+
+# Expected response (if no real games exist):
+{
+  "success": true,
+  "game": {
+    "homeTeam": "Cleveland Cavaliers",
+    "awayTeam": "Boston Celtics",
+    "startTime": "2025-12-23T00:00:00.000Z",
+    "spread": -4.5,
+    "status": "upcoming",
+    ...
+  }
+}
 ```
 
 ### Test Odds API Integration (Phase 3)
