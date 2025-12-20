@@ -90,7 +90,7 @@ export function PointsDisplay({ variant = 'full' }: PointsDisplayProps) {
           <div className="space-y-2 max-h-64 overflow-y-auto">
             {winningBets.map((bet) => (
               <div
-                key={bet._id}
+                key={bet.id}
                 className="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg hover:shadow-md transition-shadow"
               >
                 <div className="flex-1">
@@ -129,7 +129,7 @@ export function PointsDisplay({ variant = 'full' }: PointsDisplayProps) {
         <div className="flex items-center justify-between text-xs text-gray-600">
           <div className="flex items-center">
             <span className="mr-1">💡</span>
-            <span>Win 100 points per correct bet</span>
+            <span>Bets cost 100 pts. Win 200 pts (100 profit)!</span>
           </div>
           {winningBets.length > 0 && (
             <div className="text-green-600 font-semibold">

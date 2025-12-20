@@ -60,7 +60,7 @@ export function useCreateBet() {
 
   const createBet = async (
     request: CreateBetRequest
-  ): Promise<Bet | null> => {
+  ): Promise<{ bet: Bet; updatedPoints: number } | null> => {
     if (!session?.user?.accessToken) {
       setError('Authentication required');
       return null;
@@ -74,7 +74,7 @@ export function useCreateBet() {
         request,
         session.user.accessToken
       );
-      return response.bet;
+      return { bet: response.bet, updatedPoints: response.updatedPoints };
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message);

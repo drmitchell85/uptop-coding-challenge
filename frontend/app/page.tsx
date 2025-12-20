@@ -65,7 +65,7 @@ export default function Home() {
                     <div className="text-4xl mb-3">💰</div>
                     <h3 className="font-semibold text-gray-900 mb-2">3. Earn Points</h3>
                     <p className="text-sm text-gray-600">
-                      Win 100 points for each correct prediction
+                      Bets cost 100 pts. Win 200 pts (100 profit) per correct bet!
                     </p>
                   </div>
                 </div>

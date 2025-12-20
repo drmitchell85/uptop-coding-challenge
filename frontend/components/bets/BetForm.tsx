@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Game, BetSelection } from '@/lib/api/types';
 import { useCreateBet, useBets } from '@/lib/hooks/useBets';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 interface BetFormProps {
   game: Game;
@@ -15,14 +16,15 @@ interface BetFormProps {
  * Allows users to place bets on a game by selecting Cavaliers or Opponent
  */
 export function BetForm({ game, onBetPlaced }: BetFormProps) {
-  const { data: session } = useSession();
+  const { data: session, update: updateSession } = useSession();
+  const router = useRouter();
   const { createBet, loading, error } = useCreateBet();
   const { bets } = useBets();
   const [selectedTeam, setSelectedTeam] = useState<BetSelection | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Check if user already has a bet on this game
-  const existingBet = bets.find(bet => bet.gameId === game._id);
+  const existingBet = bets.find(bet => bet.gameId === game.id);
 
   // Get opponent team name
   const opponentTeam = game.isCavaliersHome ? game.awayTeam : game.homeTeam;
@@ -30,12 +32,14 @@ export function BetForm({ game, onBetPlaced }: BetFormProps) {
   const handleSubmit = async () => {
     if (!selectedTeam || !session) return;
 
-    const bet = await createBet({
-      gameId: game._id,
+    const result = await createBet({
+      gameId: game.id,
       selection: selectedTeam,
     });
 
-    if (bet) {
+    if (result) {
+      const { bet, updatedPoints } = result;
+
       setSuccessMessage(
         `Bet placed successfully! You selected ${
           selectedTeam === 'cavaliers' ? 'Cavaliers' : opponentTeam
@@ -43,7 +47,10 @@ export function BetForm({ game, onBetPlaced }: BetFormProps) {
       );
       setSelectedTeam(null);
 
-      // Call callback if provided
+      // Update session with new points balance
+      await updateSession({ points: updatedPoints });
+
+      // Call callback to refresh bets list
       if (onBetPlaced) {
         onBetPlaced();
       }
@@ -59,7 +66,7 @@ export function BetForm({ game, onBetPlaced }: BetFormProps) {
   useEffect(() => {
     setSuccessMessage(null);
     setSelectedTeam(null);
-  }, [game._id]);
+  }, [game.id]);
 
   if (!session) {
     return (
@@ -232,13 +239,13 @@ export function BetForm({ game, onBetPlaced }: BetFormProps) {
             Placing Bet...
           </div>
         ) : (
-          'Place Bet (100 points to win)'
+          'Place Bet (Costs 100 points)'
         )}
       </button>
 
       {/* Info Text */}
       <p className="text-xs text-center text-gray-500 mt-2">
-        Win 100 points if your prediction is correct! One bet per game.
+        Costs 100 points to place. Win 200 points (100 profit) if correct! One bet per game.
       </p>
     </div>
   );

@@ -32,6 +32,7 @@ export class BetResponseDto {
 export class CreateBetSuccessResponseDto {
   success: true;
   bet: BetResponseDto;
+  updatedPoints: number; // User's updated points balance after placing bet
   message?: string;
 }
 

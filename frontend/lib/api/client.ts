@@ -41,10 +41,12 @@ async function fetcher<T>(
 
     if (!response.ok) {
       // Handle error response from backend
+      // Prioritize specific error message over generic message
+      const errorMessage = data.error || data.message?.[0] || data.message || 'An error occurred';
       throw new ApiError(
-        data.message?.[0] || data.error || 'An error occurred',
+        errorMessage,
         response.status,
-        data.message
+        Array.isArray(data.message) ? data.message : [data.message]
       );
     }
 

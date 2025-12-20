@@ -45,7 +45,7 @@ export function BetsList() {
   return (
     <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
       {bets.map((bet) => (
-        <BetCard key={bet._id} bet={bet} />
+        <BetCard key={bet.id} bet={bet} />
       ))}
     </div>
   );

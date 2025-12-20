@@ -11,6 +11,7 @@ import { OddsApiService, OddsApiGame } from '../odds-api/odds-api.service';
 import { Bet, BetDocument, BetStatus, BetSelection } from '../bets/schemas/bet.schema';
 import { User, UserDocument } from '../auth/schemas/user.schema';
 import { SettleGameDto } from './dto/settle-game.dto';
+import { BET_COST, BET_PAYOUT } from '../common/constants';
 
 /**
  * Interface for the mapped game data ready to be stored
@@ -448,14 +449,15 @@ export class GamesService {
         let pointsToAward = 0;
 
         if (coverMargin === 0) {
-          // Push - tie against the spread
+          // Push - tie against the spread (refund original bet)
           betStatus = BetStatus.PUSH;
+          pointsToAward = BET_COST; // Refund the original bet cost
           pushCount++;
         } else if (coverMargin > 0) {
           // Cavaliers covered the spread
           if (bet.selection === BetSelection.CAVALIERS) {
             betStatus = BetStatus.WON;
-            pointsToAward = 100;
+            pointsToAward = BET_PAYOUT;
             wonCount++;
           } else {
             betStatus = BetStatus.LOST;
@@ -465,7 +467,7 @@ export class GamesService {
           // Cavaliers did not cover the spread
           if (bet.selection === BetSelection.OPPONENT) {
             betStatus = BetStatus.WON;
-            pointsToAward = 100;
+            pointsToAward = BET_PAYOUT;
             wonCount++;
           } else {
             betStatus = BetStatus.LOST;

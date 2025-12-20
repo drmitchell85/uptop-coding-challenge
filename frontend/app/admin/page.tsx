@@ -1,11 +1,12 @@
 'use client';
 
 import { Header } from '@/components/layout/Header';
+import { GameSettlement } from '@/components/admin/GameSettlement';
 import { withAdminAuth } from '@/lib/auth';
 
 /**
  * Admin page
- * Demonstrates withAdminAuth HOC for admin-only pages
+ * Game settlement interface for admin users
  * Only accessible to users with role='admin'
  */
 function AdminPage() {
@@ -14,35 +15,31 @@ function AdminPage() {
       <Header />
 
       <main className="container mx-auto px-4 py-12">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">
-            Admin Dashboard
-          </h1>
-
-          <div className="bg-white rounded-lg shadow-md p-8 mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Admin Functions
-            </h2>
-            <p className="text-gray-600 mb-4">
-              This page is only accessible to admin users.
+        <div className="max-w-5xl mx-auto">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+              🛡️ Admin Dashboard
+            </h1>
+            <p className="text-lg text-gray-600">
+              Manage games and settle bets
             </p>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <p className="text-sm text-yellow-900">
-                <strong>Note:</strong> Game settlement and admin functions will be implemented in Phase 7.
-              </p>
-            </div>
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          {/* Game Settlement Interface */}
+          <GameSettlement />
+
+          {/* Info Footer */}
+          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
             <h3 className="text-lg font-semibold text-blue-900 mb-2">
-              Protection Pattern
+              Admin Access
             </h3>
             <p className="text-sm text-blue-800">
-              This page demonstrates the <code className="bg-blue-100 px-2 py-1 rounded">withAdminAuth</code> HOC,
+              This page is protected by the <code className="bg-blue-100 px-2 py-1 rounded">withAdminAuth</code> HOC,
               which requires both authentication AND admin role.
             </p>
             <p className="text-sm text-blue-800 mt-2">
-              Non-admin users will be redirected to the home page.
+              Only admin users can settle games and award points to winners.
             </p>
           </div>
         </div>

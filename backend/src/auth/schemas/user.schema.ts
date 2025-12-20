@@ -19,7 +19,7 @@ export class User {
   @Prop()
   name?: string;
 
-  @Prop({ default: 0 })
+  @Prop({ default: 1000 })
   points: number;
 
   @Prop({ type: String, enum: UserRole, default: UserRole.USER })

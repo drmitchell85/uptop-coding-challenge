@@ -199,6 +199,83 @@ curl http://localhost:3001/games/next | python3 -m json.tool
 }
 ```
 
+### Test Admin Game Settlement (Phase 7.1)
+
+The admin interface allows settling games and awarding points to winners.
+
+**1. Create an admin user:**
+```bash
+# Create test admin token
+curl -X POST http://localhost:3001/auth/test-create-token \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "admin@test.com",
+    "name": "Admin User",
+    "role": "admin"
+  }' | python3 -m json.tool
+
+# The response will include an access token
+# Copy the token for the next steps
+```
+
+**2. Access the admin dashboard:**
+- Sign in to the frontend (http://localhost:3000/signin) using the admin email
+- Navigate to http://localhost:3000/admin
+- You should see the Game Settlement interface
+
+**3. Settle a game:**
+- Select a game from the dropdown
+- Enter final scores for home and away teams
+- Click "Settle Game & Award Points"
+- View settlement results showing:
+  - Total bets settled
+  - Number of bets won/lost/push
+  - Points awarded to winners
+
+**Example: Settle a game via API:**
+```bash
+# Get a game ID first
+GAME_ID=$(curl -s http://localhost:3001/games/next | python3 -c "import sys, json; print(json.load(sys.stdin)['game']['id'])")
+
+# Settle the game (requires admin token)
+TOKEN="your_admin_token_here"
+curl -X POST http://localhost:3001/games/$GAME_ID/settle \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "finalHomeScore": 112,
+    "finalAwayScore": 108
+  }' | python3 -m json.tool
+```
+
+### Reset Your Bets
+
+The admin interface includes a **RESET button** to delete your own bets. This is useful for testing the betting flow multiple times.
+
+**Using the UI:**
+1. Sign in to the application
+2. Navigate to `/admin` (available to all users)
+3. Click the red "🗑️ RESET My Bets" button
+4. Confirm the deletion dialog
+5. Your bets are removed (other users' bets remain intact)
+
+**Important:** This only deletes **YOUR bets**, not other users' bets. Each user can reset their own bets for testing.
+
+**Example: Reset via API:**
+```bash
+# Reset your bets (requires authentication)
+TOKEN="your_token_here"
+curl -X DELETE http://localhost:3001/bets \
+  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+
+# Expected response:
+{
+  "success": true,
+  "message": "Your bets deleted successfully",
+  "deletedCount": 3
+}
+```
+
 ### Test Odds API Integration (Phase 3)
 
 Once the backend is running, you can test the Odds API integration:
@@ -323,6 +400,7 @@ These endpoints are currently available for testing the Odds API integration:
 **Bets:**
 - `POST /bets` - Place a bet on a game (authenticated, prevents duplicates)
 - `GET /bets` - Get all user's bets with populated game data (authenticated)
+- `DELETE /bets` - Delete your own bets (authenticated, for testing)
 
 **Test Endpoints (Development):**
 - `GET /test-odds` - Test Odds API connection
@@ -609,12 +687,15 @@ This project is broken into phases, with each phase containing multiple commits 
 
 ### Phase 7: Testing, Polish & Documentation
 
-**Commit 7.1: Create admin testing interface**
-- [ ] Create admin page/component (can be simple form)
-- [ ] Add game settlement form
-- [ ] Input final scores
-- [ ] Trigger settlement endpoint
-- [ ] Display settlement results
+**Commit 7.1: Create admin testing interface** ✅
+- [x] Create admin page/component with GameSettlement component
+- [x] Add game selection dropdown for upcoming games
+- [x] Add score input form for home/away teams
+- [x] Implement settlement API call with useSettleGame hook
+- [x] Display settlement results with bet statistics
+- [x] Show settled games history
+- [x] Add useAllGames and useSettleGame admin hooks
+- [x] Update settlement types to match backend response
 
 **Commit 7.2: Add loading states and error handling**
 - [ ] Add loading spinners throughout the app
