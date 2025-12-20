@@ -2,10 +2,23 @@
 
 import { useSession } from 'next-auth/react';
 import { Header } from '@/components/layout/Header';
+import { GameCard } from '@/components/games/GameCard';
+import { BetForm } from '@/components/bets/BetForm';
+import { BetsList } from '@/components/bets/BetsList';
+import { PointsDisplay } from '@/components/points/PointsDisplay';
+import { useNextGame } from '@/lib/hooks/useGames';
+import { useBets } from '@/lib/hooks/useBets';
 import Link from 'next/link';
 
 export default function Home() {
   const { data: session, status } = useSession();
+  const { game, loading: gameLoading, error: gameError } = useNextGame();
+  const { bets, refetch: refetchBets } = useBets();
+
+  // Calculate stats
+  const totalBets = bets.length;
+  const betsWon = bets.filter(bet => bet.status === 'won').length;
+  const winRate = totalBets > 0 ? ((betsWon / totalBets) * 100).toFixed(1) : '0.0';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -66,25 +79,108 @@ export default function Home() {
               </Link>
             </div>
           ) : (
-            <div className="text-center">
-              <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                Welcome back, {session.user.name}! 🏀
-              </h1>
-              <p className="text-xl text-gray-600 mb-8">
-                You have <span className="font-bold text-indigo-600">{session.user.points.toLocaleString()}</span> points
-              </p>
+            <div>
+              {/* Welcome Section */}
+              <div className="text-center mb-6">
+                <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                  Welcome back, {session.user.name}! 🏀
+                </h1>
+              </div>
 
-              <div className="bg-white rounded-xl shadow-lg p-8">
-                <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                  Ready to bet on the Cavaliers?
-                </h2>
-                <p className="text-gray-600 mb-6">
-                  Betting interface coming soon in Phase 6!
-                </p>
-                <div className="text-left bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm text-blue-900">
-                    <strong>Next up:</strong> We'll add the game display and betting interface where you can place bets on upcoming Cavaliers games.
-                  </p>
+              {/* Points Display Section */}
+              <div className="mb-6 max-w-md mx-auto">
+                <PointsDisplay variant="compact" />
+              </div>
+
+              {/* Main Content Grid */}
+              <div className="grid lg:grid-cols-3 gap-6">
+                {/* Left Column: Next Game & Betting */}
+                <div className="lg:col-span-2 space-y-6">
+                  {/* Next Game Section - Phase 6.2 */}
+                  <section className="bg-white rounded-xl shadow-lg p-6">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+                      <span className="mr-2">🏀</span>
+                      Next Game
+                    </h2>
+
+                    {gameLoading ? (
+                      <div className="text-center py-12">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                        <p className="text-gray-600">Loading game data...</p>
+                      </div>
+                    ) : gameError ? (
+                      <div className="text-center py-12">
+                        <div className="text-4xl mb-4">⚠️</div>
+                        <p className="text-red-600 font-medium mb-2">Error loading game</p>
+                        <p className="text-sm text-gray-600">{gameError}</p>
+                      </div>
+                    ) : game ? (
+                      <GameCard game={game} />
+                    ) : (
+                      <div className="text-center py-12">
+                        <div className="text-4xl mb-4">📅</div>
+                        <p className="text-gray-600 font-medium mb-2">No upcoming games</p>
+                        <p className="text-sm text-gray-500">Check back soon for the next Cavaliers game!</p>
+                      </div>
+                    )}
+                  </section>
+
+                  {/* Betting Interface Section - Phase 6.3 */}
+                  <section className="bg-white rounded-xl shadow-lg p-6">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+                      <span className="mr-2">🎯</span>
+                      Place Your Bet
+                    </h2>
+
+                    {gameLoading ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <p className="text-sm">Loading...</p>
+                      </div>
+                    ) : game ? (
+                      <BetForm game={game} onBetPlaced={refetchBets} />
+                    ) : (
+                      <div className="text-center py-8">
+                        <div className="text-4xl mb-4">🎲</div>
+                        <p className="text-gray-600 font-medium mb-2">No game available</p>
+                        <p className="text-sm text-gray-500">
+                          Betting will be enabled when a game is scheduled
+                        </p>
+                      </div>
+                    )}
+                  </section>
+                </div>
+
+                {/* Right Column: Betting History & Points */}
+                <div className="lg:col-span-1 space-y-6">
+                  {/* User Bets Section - Phase 6.4 */}
+                  <section className="bg-white rounded-xl shadow-lg p-6 lg:sticky lg:top-6">
+                    <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                      <span className="mr-2">📊</span>
+                      Your Bets
+                    </h2>
+                    <BetsList />
+                  </section>
+
+                  {/* Points Display Section - Phase 6.5 */}
+                  <section>
+                    <PointsDisplay variant="full" />
+                  </section>
+                </div>
+              </div>
+
+              {/* Quick Stats Section */}
+              <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 text-center">
+                  <div className="text-3xl font-bold text-green-700">{totalBets}</div>
+                  <div className="text-sm text-green-600 font-medium">Bets Placed</div>
+                </div>
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 text-center">
+                  <div className="text-3xl font-bold text-blue-700">{betsWon}</div>
+                  <div className="text-sm text-blue-600 font-medium">Bets Won</div>
+                </div>
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 text-center">
+                  <div className="text-3xl font-bold text-purple-700">{winRate}%</div>
+                  <div className="text-sm text-purple-600 font-medium">Win Rate</div>
                 </div>
               </div>
             </div>

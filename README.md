@@ -511,37 +511,59 @@ This project is broken into phases, with each phase containing multiple commits 
 
 ### Phase 6: Frontend - Game Display & Betting Interface
 
-**Commit 6.1: Create main page layout**
-- [ ] Create home page component
-- [ ] Add navigation/header with auth status
-- [ ] Setup responsive layout with Tailwind
-- [ ] Add loading and error states
+**Commit 6.1: Create main page layout** ✅
+- [x] Create home page component
+- [x] Add navigation/header with auth status
+- [x] Setup responsive layout with Tailwind
+- [x] Add loading and error states
+- [x] Create 3-column grid layout (game display, betting form, bet history)
+- [x] Add quick stats section for user metrics
+- [x] Implement responsive design for mobile/tablet/desktop
 
-**Commit 6.2: Implement game display**
-- [ ] Create GameCard component
-- [ ] Fetch and display next game data
-- [ ] Show teams, start time, and point spread
-- [ ] Format dates and odds properly
+**Commit 6.2: Implement game display** ✅
+- [x] Create GameCard component
+- [x] Fetch and display next game data using useNextGame hook
+- [x] Show teams, start time, and point spread
+- [x] Format dates and odds properly with date-fns
+- [x] Add Cavaliers branding colors (wine and gold) to Tailwind config
+- [x] Implement loading, error, and empty states
+- [x] Display spread explanation and visual indicators
+- [x] Highlight Cavaliers team with team colors
 
-**Commit 6.3: Create betting interface**
-- [ ] Create BetForm component
-- [ ] Add team selection UI (Cavaliers vs Opponent)
-- [ ] Implement bet submission
-- [ ] Add success/error notifications
-- [ ] Disable betting after user has placed bet
+**Commit 6.3: Create betting interface** ✅
+- [x] Create BetForm component
+- [x] Add team selection UI (Cavaliers vs Opponent)
+- [x] Implement bet submission using useCreateBet hook
+- [x] Add success/error notifications with animations
+- [x] Disable betting after user has placed bet
+- [x] Show existing bet details if user already bet on game
+- [x] Add visual feedback with custom radio buttons
+- [x] Display spread information for each team option
+- [x] Include unauthenticated state handling
 
-**Commit 6.4: Display user's bets**
-- [ ] Create BetsList component
-- [ ] Fetch and display user's betting history
-- [ ] Show bet status (pending/won/lost/push)
-- [ ] Display points earned
-- [ ] Add real-time updates after bet placement
+**Commit 6.4: Display user's bets** ✅
+- [x] Create BetsList component
+- [x] Fetch and display user's betting history using useBets hook
+- [x] Show bet status with color-coded badges (pending/won/lost/push)
+- [x] Display points earned for winning bets
+- [x] Add real-time updates after bet placement
+- [x] Show game details (teams, date/time, spread)
+- [x] Display final scores for finished games
+- [x] Implement scrollable list with max height
+- [x] Add loading, error, and empty states
+- [x] Update quick stats with real data (total bets, wins, win rate)
 
-**Commit 6.5: Add user points display**
-- [ ] Create PointsDisplay component
-- [ ] Fetch and show total user points
-- [ ] Add points animation on wins
-- [ ] Display points history
+**Commit 6.5: Add user points display** ✅
+- [x] Create PointsDisplay component with two variants (compact/full)
+- [x] Fetch and show total user points from session
+- [x] Add points animation on wins using CSS transitions
+- [x] Display points history (recent transactions)
+- [x] Show transaction details (game, date/time, points earned)
+- [x] Add compact variant for prominent display on home page
+- [x] Add full variant with transaction history in sidebar
+- [x] Include empty state for no transactions
+- [x] Calculate and display total points earned
+- [x] Style with gold gradient matching Cavaliers branding
 
 ---
 

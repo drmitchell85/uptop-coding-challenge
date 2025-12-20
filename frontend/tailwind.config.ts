@@ -11,6 +11,17 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        // Cavaliers team colors (wine and gold)
+        wine: {
+          500: '#9E1C3C',
+          600: '#860038',
+          700: '#6F0029',
+        },
+        gold: {
+          400: '#FFD700',
+          500: '#FDBB30',
+          600: '#E4A600',
+        },
       },
     },
   },
