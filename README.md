@@ -489,11 +489,14 @@ This project is broken into phases, with each phase containing multiple commits 
 - [x] Update home page with authenticated/unauthenticated views
 - [x] Test complete authentication flow
 
-**Commit 5.3: Setup API client**
-- [ ] Create API client utility
-- [ ] Add authentication token handling
-- [ ] Create API hooks for data fetching
-- [ ] Add error handling
+**Commit 5.3: Setup API client** ✅
+- [x] Create API client utility with fetch wrapper
+- [x] Add authentication token handling from session
+- [x] Create custom hooks for games (useNextGame, useFetchNextGame)
+- [x] Create custom hooks for bets (useBets, useCreateBet)
+- [x] Add error handling with custom ApiError class
+- [x] Create TypeScript types for all API responses
+- [x] Test API client with backend endpoints
 
 **Commit 5.4: Create protected route wrapper**
 - [ ] Create authentication context
