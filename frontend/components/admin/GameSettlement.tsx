@@ -52,7 +52,7 @@ export function GameSettlement() {
   };
 
   const handleReset = async () => {
-    if (!confirm('Are you sure you want to reset YOUR bets and points? This cannot be undone.')) {
+    if (!confirm('Are you sure you want to RESET everything (bets, points, and games)? This cannot be undone.')) {
       return;
     }
 
@@ -94,7 +94,7 @@ export function GameSettlement() {
               Resetting...
             </div>
           ) : (
-            '🔄 RESET (Bets + Points)'
+            '🔄 RESET ALL'
           )}
         </button>
       </div>
@@ -109,10 +109,10 @@ export function GameSettlement() {
                 Reset Complete!
               </h3>
               <p className="text-orange-800">
-                {resetResult.deletedCount} bet(s) deleted and points reset to 1000.
+                {resetResult.deletedCount} bet(s) deleted, points reset to 1000, and all games reset to upcoming.
               </p>
               <p className="text-sm text-orange-700 mt-2">
-                You're back to the starting balance!
+                Everything is back to the starting state!
               </p>
             </div>
             <button
@@ -206,11 +206,11 @@ export function GameSettlement() {
                 const game = upcomingGames.find(g => g.id === e.target.value);
                 setSelectedGame(game || null);
               }}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition text-gray-900"
             >
-              <option value="">-- Select a game --</option>
+              <option value="" className="text-gray-900">-- Select a game --</option>
               {upcomingGames.map((game) => (
-                <option key={game.id} value={game.id}>
+                <option key={game.id} value={game.id} className="text-gray-900">
                   {game.awayTeam} @ {game.homeTeam} -{' '}
                   {format(new Date(game.startTime), 'MMM d, h:mm a')} (Spread: {game.spread})
                 </option>
@@ -247,7 +247,7 @@ export function GameSettlement() {
                     onChange={(e) => setHomeScore(e.target.value)}
                     min="0"
                     placeholder="e.g., 112"
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition text-gray-900"
                   />
                 </div>
 
@@ -261,7 +261,7 @@ export function GameSettlement() {
                     onChange={(e) => setAwayScore(e.target.value)}
                     min="0"
                     placeholder="e.g., 108"
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition text-gray-900"
                   />
                 </div>
               </div>

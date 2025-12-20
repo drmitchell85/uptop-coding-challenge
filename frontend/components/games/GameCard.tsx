@@ -31,7 +31,7 @@ export function GameCard({ game }: GameCardProps) {
       <div className="flex items-center justify-between mb-6">
         {/* Away Team */}
         <div className={`flex-1 text-center p-4 rounded-lg ${
-          !game.isCavaliersHome ? 'bg-wine-600 text-white' : 'bg-white'
+          !game.isCavaliersHome ? 'bg-wine-600 text-white' : 'bg-white text-gray-900'
         }`}>
           <div className="text-xs uppercase tracking-wide font-semibold mb-1 opacity-75">
             Away
@@ -46,7 +46,7 @@ export function GameCard({ game }: GameCardProps) {
 
         {/* Home Team */}
         <div className={`flex-1 text-center p-4 rounded-lg ${
-          game.isCavaliersHome ? 'bg-wine-600 text-white' : 'bg-white'
+          game.isCavaliersHome ? 'bg-wine-600 text-white' : 'bg-white text-gray-900'
         }`}>
           <div className="text-xs uppercase tracking-wide font-semibold mb-1 opacity-75">
             Home

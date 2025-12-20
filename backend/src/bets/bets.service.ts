@@ -201,13 +201,13 @@ export class BetsService {
   }
 
   /**
-   * Delete user's own bets and reset points to starting balance (for testing/reset)
+   * Delete user's own bets, reset points, and reset games to upcoming (for testing/reset)
    * @param userId - The user's ID
    * @returns Number of bets deleted
    */
   async deleteMyBets(userId: string): Promise<number> {
     try {
-      this.logger.log(`🗑️  Resetting bets and points for user ${userId}...`);
+      this.logger.log(`🗑️  Resetting bets, points, and games for user ${userId}...`);
 
       // Delete all user's bets
       const result = await this.betModel.deleteMany({
@@ -219,14 +219,23 @@ export class BetsService {
         points: 1000
       });
 
+      // Reset all finished games back to upcoming status
+      await this.gameModel.updateMany(
+        { status: 'finished' },
+        {
+          $set: { status: 'upcoming' },
+          $unset: { finalHomeScore: '', finalAwayScore: '' }
+        }
+      );
+
       this.logger.log(
-        `✅ Deleted ${result.deletedCount} bet(s) and reset points to 1000 for user ${userId}`
+        `✅ Deleted ${result.deletedCount} bet(s), reset points to 1000, and reset games to upcoming for user ${userId}`
       );
 
       return result.deletedCount;
     } catch (error) {
-      this.logger.error('❌ Failed to reset user bets and points:', error);
-      throw new BadRequestException('Failed to reset bets and points');
+      this.logger.error('❌ Failed to reset user bets, points, and games:', error);
+      throw new BadRequestException('Failed to reset bets, points, and games');
     }
   }
 }
