@@ -470,11 +470,14 @@ This project is broken into phases, with each phase containing multiple commits 
 
 ### Phase 5: Frontend - Authentication Setup
 
-**Commit 5.1: Install and configure next-auth**
-- [ ] Install next-auth
-- [ ] Create [...nextauth] API route
-- [ ] Configure credentials provider
-- [ ] Setup session handling
+**Commit 5.1: Install and configure next-auth** ✅
+- [x] Install next-auth
+- [x] Create [...nextauth] API route
+- [x] Configure credentials provider
+- [x] Setup session handling
+- [x] Create backend /auth/login endpoint
+- [x] Configure SessionProvider wrapper
+- [x] Test authentication endpoints
 
 **Commit 5.2: Create authentication UI components**
 - [ ] Create SignIn component
