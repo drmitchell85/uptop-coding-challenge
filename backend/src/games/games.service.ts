@@ -166,4 +166,117 @@ export class GamesService {
       throw error;
     }
   }
+
+  /**
+   * Upsert a game to the database
+   * Uses gameId as the unique identifier to prevent duplicates
+   * @param gameData Game data to store
+   * @returns The stored/updated game document
+   */
+  async upsertGame(gameData: NextGameData): Promise<GameDocument> {
+    try {
+      const game = await this.gameModel.findOneAndUpdate(
+        { gameId: gameData.gameId },
+        {
+          $set: {
+            homeTeam: gameData.homeTeam,
+            awayTeam: gameData.awayTeam,
+            startTime: gameData.startTime,
+            spread: gameData.spread,
+            status: gameData.status,
+          },
+        },
+        { upsert: true, new: true },
+      );
+
+      this.logger.log(`💾 Upserted game: ${gameData.gameId}`);
+      return game;
+    } catch (error) {
+      this.logger.error(`❌ Failed to upsert game ${gameData.gameId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Fetch and store the next Cavaliers game
+   * @returns The stored game document or null if no game found
+   */
+  async syncNextCavaliersGame(): Promise<GameDocument | null> {
+    try {
+      this.logger.log('🔄 Syncing next Cavaliers game to database...');
+
+      const nextGame = await this.fetchNextCavaliersGame();
+
+      if (!nextGame) {
+        this.logger.warn('⚠️  No upcoming Cavaliers game to sync');
+        return null;
+      }
+
+      const storedGame = await this.upsertGame(nextGame);
+
+      this.logger.log(
+        `✅ Synced next game: ${storedGame.awayTeam} @ ${storedGame.homeTeam}`,
+      );
+
+      return storedGame;
+    } catch (error) {
+      this.logger.error('❌ Failed to sync next Cavaliers game:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Fetch and store all upcoming Cavaliers games
+   * @returns Array of stored game documents
+   */
+  async syncAllCavaliersGames(): Promise<GameDocument[]> {
+    try {
+      this.logger.log('🔄 Syncing all Cavaliers games to database...');
+
+      const games = await this.fetchAllCavaliersGames();
+
+      if (games.length === 0) {
+        this.logger.warn('⚠️  No Cavaliers games to sync');
+        return [];
+      }
+
+      // Upsert all games
+      const storedGames = await Promise.all(
+        games.map((game) => this.upsertGame(game)),
+      );
+
+      this.logger.log(`✅ Synced ${storedGames.length} Cavaliers game(s)`);
+
+      return storedGames;
+    } catch (error) {
+      this.logger.error('❌ Failed to sync Cavaliers games:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get upcoming games from the database
+   * @param limit Maximum number of games to return (optional)
+   * @returns Array of upcoming games sorted by start time
+   */
+  async getUpcomingGames(limit?: number): Promise<GameDocument[]> {
+    try {
+      const query = this.gameModel
+        .find({ status: GameStatus.UPCOMING })
+        .sort({ startTime: 1 });
+
+      if (limit) {
+        query.limit(limit);
+      }
+
+      const games = await query.exec();
+
+      this.logger.log(`📋 Retrieved ${games.length} upcoming game(s) from database`);
+
+      return games;
+    } catch (error) {
+      this.logger.error('❌ Failed to retrieve upcoming games:', error);
+      throw error;
+    }
+  }
 }

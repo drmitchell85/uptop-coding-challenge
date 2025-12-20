@@ -115,4 +115,93 @@ export class AppController {
       };
     }
   }
+
+  @Get('sync-next-game')
+  async syncNextGame() {
+    try {
+      const game = await this.gamesService.syncNextCavaliersGame();
+
+      if (!game) {
+        return {
+          success: true,
+          message: 'No upcoming Cavaliers game to sync',
+          game: null,
+        };
+      }
+
+      return {
+        success: true,
+        message: 'Next Cavaliers game synced to database',
+        game: {
+          id: game._id,
+          gameId: game.gameId,
+          homeTeam: game.homeTeam,
+          awayTeam: game.awayTeam,
+          startTime: game.startTime,
+          spread: game.spread,
+          status: game.status,
+        },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
+  @Get('sync-all-games')
+  async syncAllGames() {
+    try {
+      const games = await this.gamesService.syncAllCavaliersGames();
+
+      return {
+        success: true,
+        message: `Synced ${games.length} Cavaliers game(s) to database`,
+        totalGames: games.length,
+        games: games.map((game) => ({
+          id: game._id,
+          gameId: game.gameId,
+          homeTeam: game.homeTeam,
+          awayTeam: game.awayTeam,
+          startTime: game.startTime,
+          spread: game.spread,
+          status: game.status,
+        })),
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
+  @Get('get-games')
+  async getGames() {
+    try {
+      const games = await this.gamesService.getUpcomingGames();
+
+      return {
+        success: true,
+        totalGames: games.length,
+        games: games.map((game) => ({
+          id: game._id,
+          gameId: game.gameId,
+          homeTeam: game.homeTeam,
+          awayTeam: game.awayTeam,
+          startTime: game.startTime,
+          spread: game.spread,
+          status: game.status,
+          createdAt: game['createdAt'],
+          updatedAt: game['updatedAt'],
+        })),
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
 }
