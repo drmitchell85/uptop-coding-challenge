@@ -50,7 +50,7 @@ export const authOptions: NextAuthOptions = {
 
           return null;
         } catch (error) {
-          console.error('Authentication error:', error);
+          // Authentication failed - return null to trigger error UI
           return null;
         }
       },
@@ -70,7 +70,7 @@ export const authOptions: NextAuthOptions = {
 
   // Callbacks for session and JWT handling
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       // On initial sign in, add user data to token
       if (user) {
         token.id = user.id;
@@ -80,6 +80,14 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role;
         token.accessToken = user.accessToken;
       }
+
+      // Handle session updates (e.g., when points change)
+      if (trigger === 'update' && session) {
+        if (session.points !== undefined) {
+          token.points = session.points;
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {

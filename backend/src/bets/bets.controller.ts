@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Body,
   UseGuards,
   Request,
@@ -11,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { BetsService } from './bets.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AdminGuard } from '../auth/guards/admin.guard';
 import { CreateBetDto } from './dto/create-bet.dto';
 import {
   BetResponseDto,
@@ -47,7 +49,7 @@ export class BetsController {
       );
 
       // Create the bet
-      const bet = await this.betsService.createBet(userId, createBetDto);
+      const { bet, updatedPoints } = await this.betsService.createBet(userId, createBetDto);
 
       // Map to response DTO
       const betResponse: BetResponseDto = {
@@ -66,6 +68,7 @@ export class BetsController {
       return {
         success: true,
         bet: betResponse,
+        updatedPoints,
         message: 'Bet placed successfully',
       };
     } catch (error) {
@@ -185,6 +188,43 @@ export class BetsController {
           success: false,
           error: error.message || 'Failed to fetch bets',
           message: 'An error occurred while fetching your bets',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * DELETE /bets
+   * Delete user's own bets
+   * Used for testing/resetting your own bets
+   *
+   * @returns Deletion confirmation
+   */
+  @Delete()
+  async deleteMyBets(@Request() req): Promise<{ success: boolean; message: string; deletedCount: number }> {
+    try {
+      const userId = req.user.id;
+
+      this.logger.log(`🗑️  User ${userId} deleting their bets...`);
+
+      const deletedCount = await this.betsService.deleteMyBets(userId);
+
+      this.logger.log(`✅ Deleted ${deletedCount} bet(s) for user ${userId}`);
+
+      return {
+        success: true,
+        message: 'Your bets deleted successfully',
+        deletedCount,
+      };
+    } catch (error) {
+      this.logger.error('❌ Failed to delete bets:', error);
+
+      throw new HttpException(
+        {
+          success: false,
+          error: error.message || 'Failed to delete bets',
+          message: 'An error occurred while deleting bets',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );

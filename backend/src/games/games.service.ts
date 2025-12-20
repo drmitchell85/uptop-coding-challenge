@@ -11,6 +11,7 @@ import { OddsApiService, OddsApiGame } from '../odds-api/odds-api.service';
 import { Bet, BetDocument, BetStatus, BetSelection } from '../bets/schemas/bet.schema';
 import { User, UserDocument } from '../auth/schemas/user.schema';
 import { SettleGameDto } from './dto/settle-game.dto';
+import { BET_COST, BET_PAYOUT } from '../common/constants';
 
 /**
  * Interface for the mapped game data ready to be stored
@@ -291,6 +292,97 @@ export class GamesService {
   }
 
   /**
+   * Generate mock Cavaliers games for testing
+   * Creates 3 realistic test games with different scenarios
+   * @returns Array of mock game data
+   */
+  private generateMockGames(): NextGameData[] {
+    const opponents = [
+      'Boston Celtics',
+      'Milwaukee Bucks',
+      'Philadelphia 76ers',
+    ];
+    const mockGames: NextGameData[] = [];
+    const now = new Date();
+
+    for (let i = 0; i < 3; i++) {
+      // Games scheduled every 3 days starting tomorrow
+      const startTime = new Date(now);
+      startTime.setDate(now.getDate() + (i + 1) * 3);
+      startTime.setHours(19, 0, 0, 0); // 7 PM ET
+
+      // Alternate between home and away games
+      const isHome = i % 2 === 0;
+      const opponent = opponents[i];
+
+      // Vary the spreads: favored, underdog, close game
+      const spreads = [-4.5, 3.5, -1.5];
+
+      mockGames.push({
+        gameId: `mock-${opponent.toLowerCase().replace(/\s+/g, '-')}-${startTime.getTime()}`,
+        homeTeam: isHome ? 'Cleveland Cavaliers' : opponent,
+        awayTeam: isHome ? opponent : 'Cleveland Cavaliers',
+        startTime,
+        spread: spreads[i],
+        status: GameStatus.UPCOMING,
+      });
+    }
+
+    return mockGames;
+  }
+
+  /**
+   * Ensure mock games exist if USE_MOCK_DATA is enabled and no real games are available
+   * This is called on application startup to provide test data
+   * @returns Number of mock games created (0 if not needed)
+   */
+  async ensureMockGamesExist(): Promise<number> {
+    // Skip if mock data is not enabled
+    if (process.env.USE_MOCK_DATA !== 'true') {
+      return 0;
+    }
+
+    try {
+      // Check if any upcoming games exist
+      const existingGames = await this.gameModel
+        .find({
+          status: GameStatus.UPCOMING,
+          startTime: { $gte: new Date() },
+        })
+        .limit(1)
+        .exec();
+
+      if (existingGames.length > 0) {
+        this.logger.log('✅ Real games exist, no mock data needed');
+        return 0;
+      }
+
+      this.logger.log('📝 No upcoming games found. Generating mock test games...');
+
+      // Generate and store mock games
+      const mockGames = this.generateMockGames();
+      const storedGames = await Promise.all(
+        mockGames.map((game) => this.upsertGame(game)),
+      );
+
+      this.logger.log(
+        `✅ Created ${storedGames.length} mock games for testing:`,
+      );
+      storedGames.forEach((game) => {
+        this.logger.log(
+          `   - ${game.awayTeam} @ ${game.homeTeam} (${game.startTime.toLocaleDateString()})`,
+        );
+      });
+
+      return storedGames.length;
+    } catch (error) {
+      this.logger.error('❌ Failed to create mock games:', error);
+      // Don't throw - this is not critical for app startup
+      return 0;
+    }
+  }
+
+  /**
    * Settle a game with final scores and award points to winners
    * @param gameId - The game's ObjectId
    * @param settleGameDto - Final scores
@@ -357,14 +449,15 @@ export class GamesService {
         let pointsToAward = 0;
 
         if (coverMargin === 0) {
-          // Push - tie against the spread
+          // Push - tie against the spread (refund original bet)
           betStatus = BetStatus.PUSH;
+          pointsToAward = BET_COST; // Refund the original bet cost
           pushCount++;
         } else if (coverMargin > 0) {
           // Cavaliers covered the spread
           if (bet.selection === BetSelection.CAVALIERS) {
             betStatus = BetStatus.WON;
-            pointsToAward = 100;
+            pointsToAward = BET_PAYOUT;
             wonCount++;
           } else {
             betStatus = BetStatus.LOST;
@@ -374,7 +467,7 @@ export class GamesService {
           // Cavaliers did not cover the spread
           if (bet.selection === BetSelection.OPPONENT) {
             betStatus = BetStatus.WON;
-            pointsToAward = 100;
+            pointsToAward = BET_PAYOUT;
             wonCount++;
           } else {
             betStatus = BetStatus.LOST;

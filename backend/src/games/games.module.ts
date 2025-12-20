@@ -1,4 +1,4 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module, forwardRef, OnModuleInit } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Game, GameSchema } from './schemas/game.schema';
 import { GamesService } from './games.service';
@@ -18,4 +18,14 @@ import { BetsModule } from '../bets/bets.module';
   providers: [GamesService],
   exports: [MongooseModule, GamesService],
 })
-export class GamesModule {}
+export class GamesModule implements OnModuleInit {
+  constructor(private readonly gamesService: GamesService) {}
+
+  /**
+   * Called when the module has been initialized
+   * Ensures mock games exist if USE_MOCK_DATA is enabled
+   */
+  async onModuleInit() {
+    await this.gamesService.ensureMockGamesExist();
+  }
+}

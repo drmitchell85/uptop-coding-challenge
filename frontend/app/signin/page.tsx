@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
  */
 export default function SignInPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('admin@test.com');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -32,6 +32,7 @@ export default function SignInPage() {
         setLoading(false);
       } else if (result?.ok) {
         // Redirect to home page on success
+        // Keep loading state true during redirect for UX
         router.push('/');
         router.refresh();
       }
@@ -65,7 +66,7 @@ export default function SignInPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-gray-900"
               placeholder="you@example.com"
               disabled={loading}
             />
@@ -84,7 +85,7 @@ export default function SignInPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-gray-900"
               placeholder="Enter any password"
               disabled={loading}
             />

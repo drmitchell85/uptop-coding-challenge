@@ -79,7 +79,25 @@ MONGODB_URI=mongodb://localhost:27017/cavs-betting
 ODDS_API_KEY=your_odds_api_key_here
 ADMIN_API_KEY=your_admin_secret_key
 PORT=3001
+
+# Mock Data (for testing when no real games are scheduled)
+USE_MOCK_DATA=true
 ```
+
+**Important - Mock Data Mode:**
+
+The `USE_MOCK_DATA` environment variable enables automatic test data generation when no real Cavaliers games are scheduled. This is **essential for:**
+- **Testing during NBA off-season** (April-October)
+- **Demos and evaluation** - works anytime, regardless of game schedule
+- **Development** - immediate testing without waiting for scheduled games
+
+When enabled:
+- Backend automatically creates 3 realistic mock games on startup if no real games exist
+- Games include varied scenarios (favored, underdog, close spread)
+- Full betting flow works exactly like real games
+- Mock games can be settled using the admin endpoint
+
+**Recommended:** Keep `USE_MOCK_DATA=true` in your `.env` file for development and evaluation.
 
 ### Frontend (.env.local)
 ```
@@ -134,9 +152,65 @@ npm run dev
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:3001
 
-## Testing the Setup
+## Testing & Documentation
 
-### Verify MongoDB Connection
+### End-to-End Testing
+For comprehensive end-to-end testing documentation, see **[TESTING.md](./TESTING.md)**.
+
+The testing documentation covers:
+- Complete user flows (signup → bet → settlement)
+- Admin settlement testing
+- Edge cases and error handling
+- Points calculation verification
+- UI/UX testing across devices
+- Session management and data integrity
+
+### UI/UX Documentation
+For detailed UI/UX design documentation, see **[UI_UX_DOCUMENTATION.md](./UI_UX_DOCUMENTATION.md)**.
+
+The UI/UX documentation covers:
+- Design system (colors, typography, spacing)
+- Component-level visual features
+- Responsive breakpoints and layouts
+- Animations and transitions
+- Accessibility features (WCAG AA compliance)
+- Performance optimizations
+
+### API Documentation
+For comprehensive API reference documentation, see **[API_DOCUMENTATION.md](./API_DOCUMENTATION.md)**.
+
+The API documentation covers:
+- All available endpoints (authentication, games, bets, admin)
+- Request/response formats with examples
+- Error handling and status codes
+- Data models and schemas
+- Complete betting flow examples
+- Rate limiting and CORS configuration
+
+### Known Issues & Limitations
+For known issues, limitations, and future enhancements, see **[KNOWN_ISSUES.md](./KNOWN_ISSUES.md)**.
+
+The known issues documentation covers:
+- Current bug status (none found ✅)
+- Limitations by design (demo authentication, mock data, etc.)
+- Technical limitations (API rate limits, browser compatibility)
+- Security considerations for production
+- Future enhancement ideas
+
+### Code Quality & Cleanup
+For code cleanup summary and quality metrics, see **[CODE_CLEANUP_SUMMARY.md](./CODE_CLEANUP_SUMMARY.md)**.
+
+The code cleanup documentation covers:
+- Console.log removal (debugging artifacts cleaned)
+- Unused imports verification (TypeScript compiler check)
+- Code comments coverage (65+ JSDoc blocks)
+- Formatting consistency (Prettier/ESLint compliant)
+- Final quality checks (build, lint, security, performance)
+- Code quality metrics and statistics
+
+### Quick Setup Verification
+
+#### Verify MongoDB Connection
 ```bash
 # Check if MongoDB is running
 mongosh --eval "db.runCommand({ ping: 1 })"
@@ -157,6 +231,110 @@ curl http://localhost:3001
 ```bash
 # Open browser to http://localhost:3000
 # You should see: "🏀 Cavaliers Betting" page
+```
+
+### Verify Mock Data (if USE_MOCK_DATA=true)
+```bash
+# Check backend logs for mock game creation
+# You should see: "✅ Created 3 mock games for testing:"
+
+# Verify games are in database
+curl http://localhost:3001/games/next | python3 -m json.tool
+
+# Expected response (if no real games exist):
+{
+  "success": true,
+  "game": {
+    "homeTeam": "Cleveland Cavaliers",
+    "awayTeam": "Boston Celtics",
+    "startTime": "2025-12-23T00:00:00.000Z",
+    "spread": -4.5,
+    "status": "upcoming",
+    ...
+  }
+}
+```
+
+### Test Admin Game Settlement (Phase 7.1)
+
+The admin interface allows settling games and awarding points to winners.
+
+**1. Create an admin user:**
+```bash
+# Create test admin token
+curl -X POST http://localhost:3001/auth/test-create-token \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "admin@test.com",
+    "name": "Admin User",
+    "role": "admin"
+  }' | python3 -m json.tool
+
+# The response will include an access token
+# Copy the token for the next steps
+```
+
+**2. Access the admin dashboard:**
+- Sign in to the frontend (http://localhost:3000/signin) using the admin email
+- Navigate to http://localhost:3000/admin
+- You should see the Game Settlement interface
+
+**3. Settle a game:**
+- Select a game from the dropdown
+- Enter final scores for home and away teams
+- Click "Settle Game & Award Points"
+- View settlement results showing:
+  - Total bets settled
+  - Number of bets won/lost/push
+  - Points awarded to winners
+
+**Example: Settle a game via API:**
+```bash
+# Get a game ID first
+GAME_ID=$(curl -s http://localhost:3001/games/next | python3 -c "import sys, json; print(json.load(sys.stdin)['game']['id'])")
+
+# Settle the game (requires admin token)
+TOKEN="your_admin_token_here"
+curl -X POST http://localhost:3001/games/$GAME_ID/settle \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "finalHomeScore": 112,
+    "finalAwayScore": 108
+  }' | python3 -m json.tool
+```
+
+### Reset Your Bets and Games
+
+The admin interface includes a **RESET ALL button** that performs a complete reset of your betting session. This is essential for testing the betting flow multiple times.
+
+**What Gets Reset:**
+1. **Your Bets** - All your bets are deleted (other users' bets remain intact)
+2. **Your Points** - Points reset to starting balance (1000)
+3. **All Games** - Settled games return to "upcoming" status (for all users)
+
+**Using the UI:**
+1. Sign in to the application
+2. Navigate to `/admin` (available to all users)
+3. Click the red "🔄 RESET ALL" button in the top-right
+4. Confirm the deletion dialog
+5. All bets, points, and games are reset
+
+**Important:** This only deletes **YOUR bets** and resets **YOUR points**, but resets **ALL games** to upcoming status so you can test the full flow again.
+
+**Example: Reset via API:**
+```bash
+# Reset your bets, points, and games (requires authentication)
+TOKEN="your_token_here"
+curl -X DELETE http://localhost:3001/bets \
+  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+
+# Expected response:
+{
+  "success": true,
+  "message": "Bets, points, and games reset successfully",
+  "deletedCount": 3
+}
 ```
 
 ### Test Odds API Integration (Phase 3)
@@ -283,6 +461,7 @@ These endpoints are currently available for testing the Odds API integration:
 **Bets:**
 - `POST /bets` - Place a bet on a game (authenticated, prevents duplicates)
 - `GET /bets` - Get all user's bets with populated game data (authenticated)
+- `DELETE /bets` - Delete your own bets (authenticated, for testing)
 
 **Test Endpoints (Development):**
 - `GET /test-odds` - Test Odds API connection
@@ -291,322 +470,6 @@ These endpoints are currently available for testing the Odds API integration:
 - `GET /sync-next-game` - Sync next game to database
 - `GET /sync-all-games` - Sync all games to database
 - `GET /get-games` - Get all upcoming games from database
-
----
-
-## Development Roadmap
-
-This project is broken into phases, with each phase containing multiple commits representing incremental progress.
-
-### Phase 1: Project Setup & Infrastructure ✅
-
-**Commit 1.1: Initialize monorepo structure** ✅
-- [x] Create root directory structure
-- [x] Add .gitignore for Node.js, TypeScript, and environment files
-- [x] Create this README.md with project overview
-
-**Commit 1.2: Initialize NestJS backend** ✅
-- [x] Run `nest new backend` with TypeScript
-- [x] Configure tsconfig.json
-- [x] Setup basic project structure (modules, controllers, services)
-- [x] Add backend-specific .gitignore
-
-**Commit 1.3: Initialize Next.js frontend** ✅
-- [x] Run `npx create-next-app@latest frontend` with TypeScript and Tailwind
-- [x] Configure Tailwind CSS v3 (compatible with Node 18)
-- [x] Setup basic project structure
-- [x] Add frontend-specific .gitignore
-
-**Commit 1.4: Setup MongoDB connection** ✅
-- [x] Install @nestjs/mongoose and mongoose in backend
-- [x] Create database module
-- [x] Configure MongoDB connection with environment variables
-- [x] Add connection error handling
-- [x] Test MongoDB connection locally
-- [x] Create SETUP.md with installation instructions
-
-**Commit 1.5: Environment configuration & Testing** (Current)
-- [x] Create .env.example files for both frontend and backend
-- [x] Setup environment validation in backend
-- [x] Add environment configuration to documentation
-- [x] Test both frontend and backend applications
-- [x] Update README with accurate version information
-
----
-
-### Phase 2: Backend - Data Models & Database Schema
-
-**Commit 2.1: Create User model** ✅
-- [x] Define User schema with Mongoose
-- [x] Create User interface/DTO
-- [x] Add points field for tracking earnings
-- [x] Setup User module with MongooseModule
-- [x] Add comprehensive documentation
-
-**Commit 2.2: Create Game model** ✅
-- [x] Define Game schema (gameId, teams, startTime, spread, status, scores)
-- [x] Create Game interface/DTO (CreateGameDto, SettleGameDto)
-- [x] Add GameStatus enum and validation
-- [x] Setup Games module with MongooseModule
-- [x] Add comprehensive documentation with point spread examples
-
-**Commit 2.3: Create Bet model** ✅
-- [x] Define Bet schema (userId, gameId, selection, status)
-- [x] Create Bet interface/DTO (CreateBetDto)
-- [x] Add references to User and Game with ObjectId
-- [x] Setup Bets module with MongooseModule
-- [x] Add BetSelection and BetStatus enums
-- [x] Add comprehensive documentation with settlement logic
-
-**Commit 2.4: Add database indexes and validations** (Current)
-- [x] Add unique indexes (email, gameId, userId+gameId compound)
-- [x] Add indexes for query optimization (startTime, status)
-- [x] Add enum validation for selections and statuses
-- [x] Add timestamps to all models (createdAt, updatedAt)
-- [ ] Test all models with MongoDB
-- [ ] Verify unique constraints work correctly
-
----
-
-### Phase 3: Backend - Odds API Integration ✅
-
-**Commit 3.1: Setup Odds API service** ✅
-- [x] Install axios for HTTP requests
-- [x] Create OddsApiService with API client
-- [x] Add API key configuration via @nestjs/config
-- [x] Create OddsApiModule and export service
-- [x] Add error handling (401, 429, network errors)
-- [x] Implement API quota tracking via response headers
-- [x] Add health check method for API validation
-- [x] Create test endpoint for API verification
-- [x] Add comprehensive documentation (README.md)
-
-**Commit 3.2: Implement fetch next Cavaliers game** ✅
-- [x] Create GamesService with OddsApiService integration
-- [x] Implement fetchNbaOdds() in OddsApiService
-- [x] Filter for Cleveland Cavaliers games (home or away)
-- [x] Sort games by start time to find next game
-- [x] Parse point spread data from bookmakers
-- [x] Extract spread from Cavaliers' perspective
-- [x] Map API response to Game schema format
-- [x] Add fetchAllCavaliersGames() for multiple games
-- [x] Create test endpoints (test-next-game, test-all-games)
-- [x] Handle edge cases (no spreads, no games found)
-
-**Commit 3.3: Implement game data storage** ✅
-- [x] Create upsertGame() method using findOneAndUpdate
-- [x] Implement syncNextCavaliersGame() to fetch and store
-- [x] Implement syncAllCavaliersGames() for bulk storage
-- [x] Add getUpcomingGames() to retrieve from database
-- [x] Handle duplicate prevention with unique gameId constraint
-- [x] Map Odds API response to Game schema
-- [x] Add comprehensive logging for all operations
-- [x] Create storage test endpoints (sync-next-game, sync-all-games, get-games)
-- [x] Test upsert functionality (prevents duplicates)
-- [x] Verify database queries and data retrieval
-
-**Commit 3.4: Create Makefile for development** ✅
-- [x] Add make dev command for parallel frontend/backend startup
-- [x] Add make stop command to kill all services
-- [x] Add make install and make clean commands
-- [x] Update README Quick Start with Makefile usage
-
----
-
-### Phase 4: Backend - Authentication & Core API ✅
-
-**Commit 4.1: Setup authentication middleware** ✅
-- [x] Install passport and JWT dependencies
-- [x] Create auth guard for protected routes
-- [x] Setup JWT validation
-- [x] Create admin role guard
-- [x] Add UserRole enum to User schema
-- [x] Create JwtStrategy for token validation
-- [x] Configure JwtModule with environment-based secrets
-- [x] Create test endpoints for authentication
-- [x] Test all guards (JWT auth and admin role)
-
-**Commit 4.2: Implement Games endpoints** ✅
-- [x] Create GamesController
-- [x] Implement GET /games/next endpoint (public)
-- [x] Implement POST /games/next endpoint (authenticated)
-- [x] Add request/response DTOs (GameResponseDto)
-- [x] Add error handling for API failures
-- [x] Add spread explanation helper
-- [x] Test both endpoints (public and authenticated)
-
-**Commit 4.3: Implement Bets endpoints** ✅
-- [x] Create BetsController
-- [x] Create BetsService with business logic
-- [x] Implement POST /bets endpoint (create bet)
-- [x] Implement GET /bets endpoint (get user bets)
-- [x] Add validation for bet placement rules (game exists, not started, status is upcoming)
-- [x] Prevent duplicate bets per game per user (compound unique index)
-- [x] Add bet response DTOs with populated game data
-- [x] Test all endpoints (auth, duplicate prevention, retrieval)
-
-**Commit 4.4: Implement admin settlement endpoint** ✅
-- [x] Create POST /games/:gameId/settle endpoint
-- [x] Add admin authentication check (JwtAuthGuard + AdminGuard)
-- [x] Implement bet result calculation logic (spread coverage algorithm)
-- [x] Update bet statuses (won/lost/push)
-- [x] Award points to winners (100 points per win)
-- [x] Add settlement method to GamesService
-- [x] Create settlement DTOs
-- [x] Resolve circular dependency between GamesModule and BetsModule
-- [x] Test settlement endpoint with admin auth
-
-**Commit 4.5: Add API documentation and error handling** ✅
-- [x] Install Swagger/OpenAPI dependencies (@nestjs/swagger, swagger-ui-express)
-- [x] Configure Swagger in main.ts with JWT bearer auth
-- [x] Implement global exception filter for consistent error responses
-- [x] Add global validation pipe (class-validator, class-transformer)
-- [x] Create consistent error response format (statusCode, timestamp, path, error, message)
-- [x] Enable automatic type transformation and validation
-- [x] Deploy Swagger UI at /api endpoint
-- [x] Test all endpoints with validation and error handling
-
----
-
-### Phase 5: Frontend - Authentication Setup
-
-**Commit 5.1: Install and configure next-auth** ✅
-- [x] Install next-auth
-- [x] Create [...nextauth] API route
-- [x] Configure credentials provider
-- [x] Setup session handling
-- [x] Create backend /auth/login endpoint
-- [x] Configure SessionProvider wrapper
-- [x] Test authentication endpoints
-
-**Commit 5.2: Create authentication UI components** ✅
-- [x] Create SignIn component with email/password form
-- [x] Create SignOut button component
-- [x] Create UserInfo component for auth state display
-- [x] Create Header component with navigation
-- [x] Add authentication state management with useSession hook
-- [x] Style components with Tailwind CSS
-- [x] Update home page with authenticated/unauthenticated views
-- [x] Test complete authentication flow
-
-**Commit 5.3: Setup API client** ✅
-- [x] Create API client utility with fetch wrapper
-- [x] Add authentication token handling from session
-- [x] Create custom hooks for games (useNextGame, useFetchNextGame)
-- [x] Create custom hooks for bets (useBets, useCreateBet)
-- [x] Add error handling with custom ApiError class
-- [x] Create TypeScript types for all API responses
-- [x] Test API client with backend endpoints
-
-**Commit 5.4: Create protected route wrapper** ✅
-- [x] Create ProtectedRoute wrapper component
-- [x] Create withAuth HOC for page-level protection
-- [x] Create withAdminAuth HOC for admin-only pages
-- [x] Add loading states for auth verification
-- [x] Implement automatic redirect logic for unauthenticated users
-- [x] Create example protected pages (/profile, /test-api, /admin)
-- [x] Test protection with both component and HOC patterns
-
----
-
-### Phase 6: Frontend - Game Display & Betting Interface
-
-**Commit 6.1: Create main page layout** ✅
-- [x] Create home page component
-- [x] Add navigation/header with auth status
-- [x] Setup responsive layout with Tailwind
-- [x] Add loading and error states
-- [x] Create 3-column grid layout (game display, betting form, bet history)
-- [x] Add quick stats section for user metrics
-- [x] Implement responsive design for mobile/tablet/desktop
-
-**Commit 6.2: Implement game display** ✅
-- [x] Create GameCard component
-- [x] Fetch and display next game data using useNextGame hook
-- [x] Show teams, start time, and point spread
-- [x] Format dates and odds properly with date-fns
-- [x] Add Cavaliers branding colors (wine and gold) to Tailwind config
-- [x] Implement loading, error, and empty states
-- [x] Display spread explanation and visual indicators
-- [x] Highlight Cavaliers team with team colors
-
-**Commit 6.3: Create betting interface** ✅
-- [x] Create BetForm component
-- [x] Add team selection UI (Cavaliers vs Opponent)
-- [x] Implement bet submission using useCreateBet hook
-- [x] Add success/error notifications with animations
-- [x] Disable betting after user has placed bet
-- [x] Show existing bet details if user already bet on game
-- [x] Add visual feedback with custom radio buttons
-- [x] Display spread information for each team option
-- [x] Include unauthenticated state handling
-
-**Commit 6.4: Display user's bets** ✅
-- [x] Create BetsList component
-- [x] Fetch and display user's betting history using useBets hook
-- [x] Show bet status with color-coded badges (pending/won/lost/push)
-- [x] Display points earned for winning bets
-- [x] Add real-time updates after bet placement
-- [x] Show game details (teams, date/time, spread)
-- [x] Display final scores for finished games
-- [x] Implement scrollable list with max height
-- [x] Add loading, error, and empty states
-- [x] Update quick stats with real data (total bets, wins, win rate)
-
-**Commit 6.5: Add user points display** ✅
-- [x] Create PointsDisplay component with two variants (compact/full)
-- [x] Fetch and show total user points from session
-- [x] Add points animation on wins using CSS transitions
-- [x] Display points history (recent transactions)
-- [x] Show transaction details (game, date/time, points earned)
-- [x] Add compact variant for prominent display on home page
-- [x] Add full variant with transaction history in sidebar
-- [x] Include empty state for no transactions
-- [x] Calculate and display total points earned
-- [x] Style with gold gradient matching Cavaliers branding
-
----
-
-### Phase 7: Testing, Polish & Documentation
-
-**Commit 7.1: Create admin testing interface**
-- [ ] Create admin page/component (can be simple form)
-- [ ] Add game settlement form
-- [ ] Input final scores
-- [ ] Trigger settlement endpoint
-- [ ] Display settlement results
-
-**Commit 7.2: Add loading states and error handling**
-- [ ] Add loading spinners throughout the app
-- [ ] Implement error boundaries
-- [ ] Add user-friendly error messages
-- [ ] Add retry mechanisms
-
-**Commit 7.3: End-to-end testing**
-- [ ] Test complete user flow (signup → view game → place bet)
-- [ ] Test admin settlement flow
-- [ ] Test edge cases (no upcoming games, duplicate bets)
-- [ ] Verify points are awarded correctly
-
-**Commit 7.4: UI polish and responsive design**
-- [ ] Refine Tailwind styling
-- [ ] Ensure mobile responsiveness
-- [ ] Add transitions and animations
-- [ ] Improve accessibility
-
-**Commit 7.5: Final documentation**
-- [ ] Update README with complete setup instructions
-- [ ] Add API documentation
-- [ ] Include example environment variables
-- [ ] Add screenshots (optional)
-- [ ] Document known issues/limitations
-
-**Commit 7.6: Code cleanup**
-- [ ] Remove console.logs
-- [ ] Remove unused imports
-- [ ] Add code comments where needed
-- [ ] Format code consistently
-- [ ] Final commit before submission
 
 ---
 
@@ -662,6 +525,19 @@ A point spread bet predicts whether a team will win by more or less than a speci
 - **Cavaliers -4.5**: Cavaliers must win by 5+ points to cover
 - **Opponent +4.5**: Opponent must lose by 4 or fewer points, or win outright
 
+### Bet Economics
+- **Starting Points**: 1000 points
+- **Bet Cost**: 100 points per bet
+- **Bet Payout**: 200 points for winning bets (100 point profit)
+- **Push**: Bet cost refunded (100 points returned)
+- **Lost Bet**: No refund
+
+**Example:**
+1. Start with 1000 points
+2. Place bet → 900 points remaining
+3. Win bet → 900 + 200 = 1100 points (net +100)
+4. Lose bet → Still at 900 points (net -100)
+
 ### Settlement Logic
 ```
 If user selected Cavaliers:
@@ -674,8 +550,6 @@ If user selected Opponent:
   - Lost: (OpponentScore - CavaliersScore) < abs(spread)
   - Push: (OpponentScore - CavaliersScore) == abs(spread)
 ```
-
-Points awarded: **100 points per winning bet**
 
 ## Technical Notes
 

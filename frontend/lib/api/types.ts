@@ -4,8 +4,8 @@
 
 // Game types
 export interface Game {
-  _id: string;
-  gameId: string;
+  id: string;  // MongoDB ObjectId as string (from backend 'id' field)
+  gameId: string;  // Unique game identifier from Odds API
   homeTeam: string;
   awayTeam: string;
   startTime: string;
@@ -35,7 +35,7 @@ export type BetSelection = 'cavaliers' | 'opponent';
 export type BetStatus = 'pending' | 'won' | 'lost' | 'push';
 
 export interface Bet {
-  _id: string;
+  id: string;
   userId: string;
   gameId: string;
   selection: BetSelection;
@@ -54,6 +54,7 @@ export interface CreateBetRequest {
 export interface CreateBetResponse {
   success: boolean;
   bet: Bet;
+  updatedPoints: number;
 }
 
 export interface GetBetsResponse {
@@ -70,7 +71,25 @@ export interface SettleGameRequest {
 export interface SettleGameResponse {
   success: boolean;
   message: string;
-  game: Game;
-  betsSettled: number;
-  pointsAwarded: number;
+  game: {
+    id: string;
+    gameId: string;
+    homeTeam: string;
+    awayTeam: string;
+    finalHomeScore: number;
+    finalAwayScore: number;
+    status: string;
+  };
+  betsSettled: {
+    total: number;
+    won: number;
+    lost: number;
+    push: number;
+  };
+}
+
+// Response for getting all games
+export interface GetAllGamesResponse {
+  success: boolean;
+  games: Game[];
 }

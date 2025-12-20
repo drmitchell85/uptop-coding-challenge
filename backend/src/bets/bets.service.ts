@@ -9,7 +9,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Bet, BetDocument, BetStatus } from './schemas/bet.schema';
 import { Game, GameDocument, GameStatus } from '../games/schemas/game.schema';
+import { User, UserDocument } from '../auth/schemas/user.schema';
 import { CreateBetDto } from './dto/create-bet.dto';
+import { BET_COST, BET_PAYOUT } from '../common/constants';
 
 @Injectable()
 export class BetsService {
@@ -18,18 +20,19 @@ export class BetsService {
   constructor(
     @InjectModel(Bet.name) private betModel: Model<BetDocument>,
     @InjectModel(Game.name) private gameModel: Model<GameDocument>,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
   ) {}
 
   /**
    * Create a new bet for a user
    * @param userId - The authenticated user's ID
    * @param createBetDto - Bet data (gameId, selection)
-   * @returns The created bet
+   * @returns The created bet and updated points balance
    */
   async createBet(
     userId: string,
     createBetDto: CreateBetDto,
-  ): Promise<BetDocument> {
+  ): Promise<{ bet: BetDocument; updatedPoints: number }> {
     try {
       this.logger.log(
         `🎲 Creating bet for user ${userId} on game ${createBetDto.gameId}`,
@@ -38,6 +41,22 @@ export class BetsService {
       // Validate gameId is a valid ObjectId
       if (!Types.ObjectId.isValid(createBetDto.gameId)) {
         throw new BadRequestException('Invalid game ID format');
+      }
+
+      // Find the user
+      const user = await this.userModel.findById(userId);
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      // Check if user has enough points to place bet
+      if (user.points < BET_COST) {
+        this.logger.warn(
+          `⚠️  User ${userId} has insufficient points: ${user.points} < ${BET_COST}`,
+        );
+        throw new BadRequestException(
+          `Insufficient points. You need ${BET_COST} points to place a bet, but you only have ${user.points} points.`,
+        );
       }
 
       // Find the game
@@ -64,6 +83,14 @@ export class BetsService {
         );
       }
 
+      // Deduct bet cost from user's points
+      user.points -= BET_COST;
+      await user.save();
+
+      this.logger.log(
+        `💰 Deducted ${BET_COST} points from user ${userId}. New balance: ${user.points}`,
+      );
+
       // Create the bet
       const bet = new this.betModel({
         userId: new Types.ObjectId(userId),
@@ -77,7 +104,7 @@ export class BetsService {
 
       this.logger.log(`✅ Bet created successfully: ${bet._id}`);
 
-      return bet;
+      return { bet, updatedPoints: user.points };
     } catch (error) {
       // Handle duplicate bet error (unique constraint violation)
       if (error.code === 11000) {
@@ -170,6 +197,45 @@ export class BetsService {
 
       this.logger.error('❌ Failed to fetch bet:', error);
       throw new BadRequestException('Failed to fetch bet');
+    }
+  }
+
+  /**
+   * Delete user's own bets, reset points, and reset games to upcoming (for testing/reset)
+   * @param userId - The user's ID
+   * @returns Number of bets deleted
+   */
+  async deleteMyBets(userId: string): Promise<number> {
+    try {
+      this.logger.log(`🗑️  Resetting bets, points, and games for user ${userId}...`);
+
+      // Delete all user's bets
+      const result = await this.betModel.deleteMany({
+        userId: new Types.ObjectId(userId)
+      });
+
+      // Reset user's points to starting balance (1000)
+      await this.userModel.findByIdAndUpdate(userId, {
+        points: 1000
+      });
+
+      // Reset all finished games back to upcoming status
+      await this.gameModel.updateMany(
+        { status: 'finished' },
+        {
+          $set: { status: 'upcoming' },
+          $unset: { finalHomeScore: '', finalAwayScore: '' }
+        }
+      );
+
+      this.logger.log(
+        `✅ Deleted ${result.deletedCount} bet(s), reset points to 1000, and reset games to upcoming for user ${userId}`
+      );
+
+      return result.deletedCount;
+    } catch (error) {
+      this.logger.error('❌ Failed to reset user bets, points, and games:', error);
+      throw new BadRequestException('Failed to reset bets, points, and games');
     }
   }
 }
