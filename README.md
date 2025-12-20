@@ -248,22 +248,27 @@ curl -X POST http://localhost:3001/games/$GAME_ID/settle \
   }' | python3 -m json.tool
 ```
 
-### Reset Your Bets
+### Reset Your Bets and Games
 
-The admin interface includes a **RESET button** to delete your own bets. This is useful for testing the betting flow multiple times.
+The admin interface includes a **RESET ALL button** that performs a complete reset of your betting session. This is essential for testing the betting flow multiple times.
+
+**What Gets Reset:**
+1. **Your Bets** - All your bets are deleted (other users' bets remain intact)
+2. **Your Points** - Points reset to starting balance (1000)
+3. **All Games** - Settled games return to "upcoming" status (for all users)
 
 **Using the UI:**
 1. Sign in to the application
 2. Navigate to `/admin` (available to all users)
-3. Click the red "🗑️ RESET My Bets" button
+3. Click the red "🔄 RESET ALL" button in the top-right
 4. Confirm the deletion dialog
-5. Your bets are removed (other users' bets remain intact)
+5. All bets, points, and games are reset
 
-**Important:** This only deletes **YOUR bets**, not other users' bets. Each user can reset their own bets for testing.
+**Important:** This only deletes **YOUR bets** and resets **YOUR points**, but resets **ALL games** to upcoming status so you can test the full flow again.
 
 **Example: Reset via API:**
 ```bash
-# Reset your bets (requires authentication)
+# Reset your bets, points, and games (requires authentication)
 TOKEN="your_token_here"
 curl -X DELETE http://localhost:3001/bets \
   -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
@@ -271,7 +276,7 @@ curl -X DELETE http://localhost:3001/bets \
 # Expected response:
 {
   "success": true,
-  "message": "Your bets deleted successfully",
+  "message": "Bets, points, and games reset successfully",
   "deletedCount": 3
 }
 ```
@@ -696,12 +701,18 @@ This project is broken into phases, with each phase containing multiple commits 
 - [x] Show settled games history
 - [x] Add useAllGames and useSettleGame admin hooks
 - [x] Update settlement types to match backend response
+- [x] Add bet cost system (BET_COST = 100, BET_PAYOUT = 200)
+- [x] Add RESET button functionality for testing
 
-**Commit 7.2: Add loading states and error handling**
-- [ ] Add loading spinners throughout the app
-- [ ] Implement error boundaries
-- [ ] Add user-friendly error messages
-- [ ] Add retry mechanisms
+**Commit 7.2: Bug fixes and UI polish** ✅
+- [x] Fix session updates not reflecting after placing bets (NextAuth JWT callback)
+- [x] Fix RESET button to reset points to 1000 and games to upcoming status
+- [x] Fix white/unreadable text in form inputs (signin page, admin dropdown)
+- [x] Fix dark mode gray overlay blocking interaction (Tailwind config)
+- [x] Fix away/home team text colors in GameCard component
+- [x] Add explicit text-gray-900 classes throughout for readability
+- [x] Disable automatic dark mode detection (darkMode: 'class')
+- [x] Update RESET button messaging and confirmation dialog
 
 **Commit 7.3: End-to-end testing**
 - [ ] Test complete user flow (signup → view game → place bet)
@@ -783,6 +794,19 @@ A point spread bet predicts whether a team will win by more or less than a speci
 - **Cavaliers -4.5**: Cavaliers must win by 5+ points to cover
 - **Opponent +4.5**: Opponent must lose by 4 or fewer points, or win outright
 
+### Bet Economics
+- **Starting Points**: 1000 points
+- **Bet Cost**: 100 points per bet
+- **Bet Payout**: 200 points for winning bets (100 point profit)
+- **Push**: Bet cost refunded (100 points returned)
+- **Lost Bet**: No refund
+
+**Example:**
+1. Start with 1000 points
+2. Place bet → 900 points remaining
+3. Win bet → 900 + 200 = 1100 points (net +100)
+4. Lose bet → Still at 900 points (net -100)
+
 ### Settlement Logic
 ```
 If user selected Cavaliers:
@@ -795,8 +819,6 @@ If user selected Opponent:
   - Lost: (OpponentScore - CavaliersScore) < abs(spread)
   - Push: (OpponentScore - CavaliersScore) == abs(spread)
 ```
-
-Points awarded: **100 points per winning bet**
 
 ## Technical Notes
 
