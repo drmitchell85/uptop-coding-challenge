@@ -265,18 +265,32 @@ These endpoints are currently available for testing the Odds API integration:
 - `GET /sync-all-games` - Fetch and store all Cavaliers games to database
 - `GET /get-games` - Retrieve all upcoming games from database
 
-### Planned API Endpoints (Phase 4+)
+### Production API Endpoints (Phase 4 - Complete) ✅
+
+**Swagger Documentation:**
+- `GET /api` - Interactive Swagger UI documentation with JWT authentication
+
+**Authentication:**
+- `POST /auth/test-create-token` - Create test user and JWT token (dev/test only)
+- `GET /auth/test-protected` - Test JWT authentication (dev/test only)
+- `GET /auth/test-admin` - Test admin role guard (dev/test only)
 
 **Games:**
-- `GET /games/next` - Get the next Cavaliers game and odds
+- `GET /games/next` - Get the next Cavaliers game from database (public)
 - `POST /games/next` - Fetch and store next game from Odds API (authenticated)
+- `POST /games/:gameId/settle` - Settle game with final scores (admin only)
 
 **Bets:**
-- `POST /bets` - Place a bet (authenticated)
-- `GET /bets` - Get user's bets (authenticated)
+- `POST /bets` - Place a bet on a game (authenticated, prevents duplicates)
+- `GET /bets` - Get all user's bets with populated game data (authenticated)
 
-**Admin:**
-- `POST /games/:gameId/settle` - Settle bets with final scores (admin only)
+**Test Endpoints (Development):**
+- `GET /test-odds` - Test Odds API connection
+- `GET /test-next-game` - Fetch next Cavaliers game from Odds API
+- `GET /test-all-games` - Fetch all Cavaliers games from Odds API
+- `GET /sync-next-game` - Sync next game to database
+- `GET /sync-all-games` - Sync all games to database
+- `GET /get-games` - Get all upcoming games from database
 
 ---
 
@@ -399,7 +413,7 @@ This project is broken into phases, with each phase containing multiple commits 
 
 ---
 
-### Phase 4: Backend - Authentication & Core API
+### Phase 4: Backend - Authentication & Core API ✅
 
 **Commit 4.1: Setup authentication middleware** ✅
 - [x] Install passport and JWT dependencies
@@ -442,11 +456,15 @@ This project is broken into phases, with each phase containing multiple commits 
 - [x] Resolve circular dependency between GamesModule and BetsModule
 - [x] Test settlement endpoint with admin auth
 
-**Commit 4.5: Add API documentation and error handling**
-- [ ] Add Swagger/OpenAPI documentation (optional)
-- [ ] Implement global exception filter
-- [ ] Add validation pipes
-- [ ] Create consistent error response format
+**Commit 4.5: Add API documentation and error handling** ✅
+- [x] Install Swagger/OpenAPI dependencies (@nestjs/swagger, swagger-ui-express)
+- [x] Configure Swagger in main.ts with JWT bearer auth
+- [x] Implement global exception filter for consistent error responses
+- [x] Add global validation pipe (class-validator, class-transformer)
+- [x] Create consistent error response format (statusCode, timestamp, path, error, message)
+- [x] Enable automatic type transformation and validation
+- [x] Deploy Swagger UI at /api endpoint
+- [x] Test all endpoints with validation and error handling
 
 ---
 
