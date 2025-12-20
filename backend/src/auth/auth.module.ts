@@ -7,6 +7,8 @@ import { User, UserSchema } from './schemas/user.schema';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { AdminGuard } from './guards/admin.guard';
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
 
 @Module({
   imports: [
@@ -23,7 +25,8 @@ import { AdminGuard } from './guards/admin.guard';
       inject: [ConfigService],
     }),
   ],
-  providers: [JwtStrategy, JwtAuthGuard, AdminGuard],
+  controllers: [AuthController],
+  providers: [AuthService, JwtStrategy, JwtAuthGuard, AdminGuard],
   exports: [MongooseModule, JwtModule, JwtAuthGuard, AdminGuard],
 })
 export class AuthModule {}

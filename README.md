@@ -470,29 +470,42 @@ This project is broken into phases, with each phase containing multiple commits 
 
 ### Phase 5: Frontend - Authentication Setup
 
-**Commit 5.1: Install and configure next-auth**
-- [ ] Install next-auth
-- [ ] Create [...nextauth] API route
-- [ ] Configure credentials provider
-- [ ] Setup session handling
+**Commit 5.1: Install and configure next-auth** ✅
+- [x] Install next-auth
+- [x] Create [...nextauth] API route
+- [x] Configure credentials provider
+- [x] Setup session handling
+- [x] Create backend /auth/login endpoint
+- [x] Configure SessionProvider wrapper
+- [x] Test authentication endpoints
 
-**Commit 5.2: Create authentication UI components**
-- [ ] Create SignIn component
-- [ ] Create SignOut button
-- [ ] Add authentication state management
-- [ ] Style components with Tailwind
+**Commit 5.2: Create authentication UI components** ✅
+- [x] Create SignIn component with email/password form
+- [x] Create SignOut button component
+- [x] Create UserInfo component for auth state display
+- [x] Create Header component with navigation
+- [x] Add authentication state management with useSession hook
+- [x] Style components with Tailwind CSS
+- [x] Update home page with authenticated/unauthenticated views
+- [x] Test complete authentication flow
 
-**Commit 5.3: Setup API client**
-- [ ] Create API client utility
-- [ ] Add authentication token handling
-- [ ] Create API hooks for data fetching
-- [ ] Add error handling
+**Commit 5.3: Setup API client** ✅
+- [x] Create API client utility with fetch wrapper
+- [x] Add authentication token handling from session
+- [x] Create custom hooks for games (useNextGame, useFetchNextGame)
+- [x] Create custom hooks for bets (useBets, useCreateBet)
+- [x] Add error handling with custom ApiError class
+- [x] Create TypeScript types for all API responses
+- [x] Test API client with backend endpoints
 
-**Commit 5.4: Create protected route wrapper**
-- [ ] Create authentication context
-- [ ] Add route protection logic
-- [ ] Create loading states
-- [ ] Handle unauthenticated redirects
+**Commit 5.4: Create protected route wrapper** ✅
+- [x] Create ProtectedRoute wrapper component
+- [x] Create withAuth HOC for page-level protection
+- [x] Create withAdminAuth HOC for admin-only pages
+- [x] Add loading states for auth verification
+- [x] Implement automatic redirect logic for unauthenticated users
+- [x] Create example protected pages (/profile, /test-api, /admin)
+- [x] Test protection with both component and HOC patterns
 
 ---
 
