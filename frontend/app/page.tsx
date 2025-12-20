@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { Header } from '@/components/layout/Header';
 import { GameCard } from '@/components/games/GameCard';
 import { BetForm } from '@/components/bets/BetForm';
+import { BetsList } from '@/components/bets/BetsList';
 import { useNextGame } from '@/lib/hooks/useGames';
 import { useBets } from '@/lib/hooks/useBets';
 import Link from 'next/link';
@@ -11,7 +12,12 @@ import Link from 'next/link';
 export default function Home() {
   const { data: session, status } = useSession();
   const { game, loading: gameLoading, error: gameError } = useNextGame();
-  const { refetch: refetchBets } = useBets();
+  const { bets, refetch: refetchBets } = useBets();
+
+  // Calculate stats
+  const totalBets = bets.length;
+  const betsWon = bets.filter(bet => bet.status === 'won').length;
+  const winRate = totalBets > 0 ? ((betsWon / totalBets) * 100).toFixed(1) : '0.0';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -149,10 +155,7 @@ export default function Home() {
                       <span className="mr-2">📊</span>
                       Your Bets
                     </h2>
-                    <div className="text-center py-8 text-gray-500">
-                      <p className="text-sm">Betting history coming in Phase 6.4</p>
-                      <p className="text-xs mt-2">Will show: Past bets, status, points earned</p>
-                    </div>
+                    <BetsList />
                   </section>
                 </div>
               </div>
@@ -160,15 +163,15 @@ export default function Home() {
               {/* Quick Stats Section */}
               <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 text-center">
-                  <div className="text-3xl font-bold text-green-700">-</div>
+                  <div className="text-3xl font-bold text-green-700">{totalBets}</div>
                   <div className="text-sm text-green-600 font-medium">Bets Placed</div>
                 </div>
                 <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 text-center">
-                  <div className="text-3xl font-bold text-blue-700">-</div>
+                  <div className="text-3xl font-bold text-blue-700">{betsWon}</div>
                   <div className="text-sm text-blue-600 font-medium">Bets Won</div>
                 </div>
                 <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 text-center">
-                  <div className="text-3xl font-bold text-purple-700">-</div>
+                  <div className="text-3xl font-bold text-purple-700">{winRate}%</div>
                   <div className="text-sm text-purple-600 font-medium">Win Rate</div>
                 </div>
               </div>

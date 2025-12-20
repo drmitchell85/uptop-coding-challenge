@@ -541,12 +541,17 @@ This project is broken into phases, with each phase containing multiple commits 
 - [x] Display spread information for each team option
 - [x] Include unauthenticated state handling
 
-**Commit 6.4: Display user's bets**
-- [ ] Create BetsList component
-- [ ] Fetch and display user's betting history
-- [ ] Show bet status (pending/won/lost/push)
-- [ ] Display points earned
-- [ ] Add real-time updates after bet placement
+**Commit 6.4: Display user's bets** ✅
+- [x] Create BetsList component
+- [x] Fetch and display user's betting history using useBets hook
+- [x] Show bet status with color-coded badges (pending/won/lost/push)
+- [x] Display points earned for winning bets
+- [x] Add real-time updates after bet placement
+- [x] Show game details (teams, date/time, spread)
+- [x] Display final scores for finished games
+- [x] Implement scrollable list with max height
+- [x] Add loading, error, and empty states
+- [x] Update quick stats with real data (total bets, wins, win rate)
 
 **Commit 6.5: Add user points display**
 - [ ] Create PointsDisplay component
