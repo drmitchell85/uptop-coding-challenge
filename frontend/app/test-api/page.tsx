@@ -2,12 +2,14 @@
 
 import { useNextGame, useBets } from '@/lib/hooks';
 import { Header } from '@/components/layout/Header';
+import { withAuth } from '@/lib/auth';
 
 /**
  * Test page for API client functionality
+ * This page requires authentication (demonstrates withAuth HOC)
  * This page will be removed in production
  */
-export default function TestApiPage() {
+function TestApiPage() {
   const { game, loading: gameLoading, error: gameError } = useNextGame();
   const { bets, loading: betsLoading, error: betsError } = useBets();
 
@@ -57,3 +59,6 @@ export default function TestApiPage() {
     </div>
   );
 }
+
+// Wrap with withAuth HOC to protect this page
+export default withAuth(TestApiPage);

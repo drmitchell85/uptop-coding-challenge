@@ -498,11 +498,14 @@ This project is broken into phases, with each phase containing multiple commits 
 - [x] Create TypeScript types for all API responses
 - [x] Test API client with backend endpoints
 
-**Commit 5.4: Create protected route wrapper**
-- [ ] Create authentication context
-- [ ] Add route protection logic
-- [ ] Create loading states
-- [ ] Handle unauthenticated redirects
+**Commit 5.4: Create protected route wrapper** ✅
+- [x] Create ProtectedRoute wrapper component
+- [x] Create withAuth HOC for page-level protection
+- [x] Create withAdminAuth HOC for admin-only pages
+- [x] Add loading states for auth verification
+- [x] Implement automatic redirect logic for unauthenticated users
+- [x] Create example protected pages (/profile, /test-api, /admin)
+- [x] Test protection with both component and HOC patterns
 
 ---
 
