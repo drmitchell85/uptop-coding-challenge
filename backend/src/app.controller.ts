@@ -1,7 +1,13 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Request } from '@nestjs/common';
 import { AppService } from './app.service';
 import { OddsApiService } from './odds-api/odds-api.service';
 import { GamesService } from './games/games.service';
+import { JwtService } from '@nestjs/jwt';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { User, UserDocument } from './auth/schemas/user.schema';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { AdminGuard } from './auth/guards/admin.guard';
 
 @Controller()
 export class AppController {
@@ -9,6 +15,8 @@ export class AppController {
     private readonly appService: AppService,
     private readonly oddsApiService: OddsApiService,
     private readonly gamesService: GamesService,
+    private readonly jwtService: JwtService,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
   ) {}
 
   @Get()
@@ -203,5 +211,85 @@ export class AppController {
         error: error.message,
       };
     }
+  }
+
+  /**
+   * TEST ENDPOINT: Create a JWT token for testing
+   * Creates a user in database and returns a JWT token
+   */
+  @Post('auth/test-create-token')
+  async testCreateToken(@Body() body: { email: string; role?: string }) {
+    try {
+      const { email, role } = body;
+
+      if (!email) {
+        return {
+          success: false,
+          error: 'Email is required',
+        };
+      }
+
+      // Create or update user
+      const user = await this.userModel.findOneAndUpdate(
+        { email },
+        {
+          email,
+          name: email.split('@')[0],
+          points: 0,
+          role: role === 'admin' ? 'admin' : 'user',
+        },
+        { upsert: true, new: true },
+      );
+
+      // Generate JWT token
+      const token = this.jwtService.sign({
+        email: user.email,
+        sub: user._id.toString(),
+      });
+
+      return {
+        success: true,
+        user: {
+          id: user._id,
+          email: user.email,
+          name: user.name,
+          points: user.points,
+          role: user.role,
+        },
+        token,
+        usage: 'Use this token in Authorization header: Bearer <token>',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
+  /**
+   * TEST ENDPOINT: Test protected route (requires JWT)
+   */
+  @Get('auth/test-protected')
+  @UseGuards(JwtAuthGuard)
+  async testProtected(@Request() req) {
+    return {
+      success: true,
+      message: 'This is a protected route',
+      user: req.user,
+    };
+  }
+
+  /**
+   * TEST ENDPOINT: Test admin-only route (requires JWT + admin role)
+   */
+  @Get('auth/test-admin')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  async testAdmin(@Request() req) {
+    return {
+      success: true,
+      message: 'This is an admin-only route',
+      user: req.user,
+    };
   }
 }

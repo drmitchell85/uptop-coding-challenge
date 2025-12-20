@@ -265,18 +265,32 @@ These endpoints are currently available for testing the Odds API integration:
 - `GET /sync-all-games` - Fetch and store all Cavaliers games to database
 - `GET /get-games` - Retrieve all upcoming games from database
 
-### Planned API Endpoints (Phase 4+)
+### Production API Endpoints (Phase 4 - Complete) ✅
+
+**Swagger Documentation:**
+- `GET /api` - Interactive Swagger UI documentation with JWT authentication
+
+**Authentication:**
+- `POST /auth/test-create-token` - Create test user and JWT token (dev/test only)
+- `GET /auth/test-protected` - Test JWT authentication (dev/test only)
+- `GET /auth/test-admin` - Test admin role guard (dev/test only)
 
 **Games:**
-- `GET /games/next` - Get the next Cavaliers game and odds
+- `GET /games/next` - Get the next Cavaliers game from database (public)
 - `POST /games/next` - Fetch and store next game from Odds API (authenticated)
+- `POST /games/:gameId/settle` - Settle game with final scores (admin only)
 
 **Bets:**
-- `POST /bets` - Place a bet (authenticated)
-- `GET /bets` - Get user's bets (authenticated)
+- `POST /bets` - Place a bet on a game (authenticated, prevents duplicates)
+- `GET /bets` - Get all user's bets with populated game data (authenticated)
 
-**Admin:**
-- `POST /games/:gameId/settle` - Settle bets with final scores (admin only)
+**Test Endpoints (Development):**
+- `GET /test-odds` - Test Odds API connection
+- `GET /test-next-game` - Fetch next Cavaliers game from Odds API
+- `GET /test-all-games` - Fetch all Cavaliers games from Odds API
+- `GET /sync-next-game` - Sync next game to database
+- `GET /sync-all-games` - Sync all games to database
+- `GET /get-games` - Get all upcoming games from database
 
 ---
 
@@ -399,40 +413,58 @@ This project is broken into phases, with each phase containing multiple commits 
 
 ---
 
-### Phase 4: Backend - Authentication & Core API
+### Phase 4: Backend - Authentication & Core API ✅
 
-**Commit 4.1: Setup authentication middleware**
-- [ ] Install passport and JWT dependencies
-- [ ] Create auth guard for protected routes
-- [ ] Setup JWT validation
-- [ ] Create admin role guard
+**Commit 4.1: Setup authentication middleware** ✅
+- [x] Install passport and JWT dependencies
+- [x] Create auth guard for protected routes
+- [x] Setup JWT validation
+- [x] Create admin role guard
+- [x] Add UserRole enum to User schema
+- [x] Create JwtStrategy for token validation
+- [x] Configure JwtModule with environment-based secrets
+- [x] Create test endpoints for authentication
+- [x] Test all guards (JWT auth and admin role)
 
-**Commit 4.2: Implement Games endpoints**
-- [ ] Create GamesController
-- [ ] Implement GET /games/next endpoint
-- [ ] Implement POST /games/next endpoint (authenticated)
-- [ ] Add request/response DTOs
-- [ ] Add error handling
+**Commit 4.2: Implement Games endpoints** ✅
+- [x] Create GamesController
+- [x] Implement GET /games/next endpoint (public)
+- [x] Implement POST /games/next endpoint (authenticated)
+- [x] Add request/response DTOs (GameResponseDto)
+- [x] Add error handling for API failures
+- [x] Add spread explanation helper
+- [x] Test both endpoints (public and authenticated)
 
-**Commit 4.3: Implement Bets endpoints**
-- [ ] Create BetsController
-- [ ] Implement POST /bets endpoint (create bet)
-- [ ] Implement GET /bets endpoint (get user bets)
-- [ ] Add validation for bet placement rules
-- [ ] Prevent duplicate bets per game per user
+**Commit 4.3: Implement Bets endpoints** ✅
+- [x] Create BetsController
+- [x] Create BetsService with business logic
+- [x] Implement POST /bets endpoint (create bet)
+- [x] Implement GET /bets endpoint (get user bets)
+- [x] Add validation for bet placement rules (game exists, not started, status is upcoming)
+- [x] Prevent duplicate bets per game per user (compound unique index)
+- [x] Add bet response DTOs with populated game data
+- [x] Test all endpoints (auth, duplicate prevention, retrieval)
 
-**Commit 4.4: Implement admin settlement endpoint**
-- [ ] Create POST /games/:gameId/settle endpoint
-- [ ] Add admin authentication check
-- [ ] Implement bet result calculation logic
-- [ ] Update bet statuses (won/lost/push)
-- [ ] Award points to winners
+**Commit 4.4: Implement admin settlement endpoint** ✅
+- [x] Create POST /games/:gameId/settle endpoint
+- [x] Add admin authentication check (JwtAuthGuard + AdminGuard)
+- [x] Implement bet result calculation logic (spread coverage algorithm)
+- [x] Update bet statuses (won/lost/push)
+- [x] Award points to winners (100 points per win)
+- [x] Add settlement method to GamesService
+- [x] Create settlement DTOs
+- [x] Resolve circular dependency between GamesModule and BetsModule
+- [x] Test settlement endpoint with admin auth
 
-**Commit 4.5: Add API documentation and error handling**
-- [ ] Add Swagger/OpenAPI documentation (optional)
-- [ ] Implement global exception filter
-- [ ] Add validation pipes
-- [ ] Create consistent error response format
+**Commit 4.5: Add API documentation and error handling** ✅
+- [x] Install Swagger/OpenAPI dependencies (@nestjs/swagger, swagger-ui-express)
+- [x] Configure Swagger in main.ts with JWT bearer auth
+- [x] Implement global exception filter for consistent error responses
+- [x] Add global validation pipe (class-validator, class-transformer)
+- [x] Create consistent error response format (statusCode, timestamp, path, error, message)
+- [x] Enable automatic type transformation and validation
+- [x] Deploy Swagger UI at /api endpoint
+- [x] Test all endpoints with validation and error handling
 
 ---
 
