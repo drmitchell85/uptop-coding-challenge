@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { GamesModule } from './games/games.module';
 import { BetsModule } from './bets/bets.module';
 import { DatabaseModule } from './database/database.module';
+import { OddsApiModule } from './odds-api/odds-api.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { DatabaseModule } from './database/database.module';
     AuthModule,
     GamesModule,
     BetsModule,
+    OddsApiModule,
   ],
   controllers: [AppController],
   providers: [AppService],

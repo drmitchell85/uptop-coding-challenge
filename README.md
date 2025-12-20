@@ -90,6 +90,28 @@ NEXT_PUBLIC_API_URL=http://localhost:3001
 
 ## Quick Start
 
+### Option 1: Using Makefile (Recommended)
+
+```bash
+# 1. Ensure MongoDB is running (see MongoDB Setup above)
+
+# 2. Install dependencies
+make install
+
+# 3. Configure environment files
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env.local
+# Edit .env files and add your MONGODB_URI and API keys
+
+# 4. Start both frontend and backend
+make dev
+
+# To stop all services
+make stop
+```
+
+### Option 2: Manual Setup
+
 ```bash
 # 1. Ensure MongoDB is running (see MongoDB Setup above)
 
@@ -137,9 +159,52 @@ curl http://localhost:3001
 # You should see: "🏀 Cavaliers Betting" page
 ```
 
+### Test Odds API Integration (Phase 3)
+
+Once the backend is running, you can test the Odds API integration:
+
+```bash
+# Test Odds API connection
+curl http://localhost:3001/test-odds | python3 -m json.tool
+
+# Fetch next Cavaliers game from API
+curl http://localhost:3001/test-next-game | python3 -m json.tool
+
+# Fetch all Cavaliers games from API
+curl http://localhost:3001/test-all-games | python3 -m json.tool
+
+# Sync next game to database
+curl http://localhost:3001/sync-next-game | python3 -m json.tool
+
+# Sync all games to database
+curl http://localhost:3001/sync-all-games | python3 -m json.tool
+
+# Get games from database
+curl http://localhost:3001/get-games | python3 -m json.tool
+```
+
+**Example Response (test-next-game):**
+```json
+{
+  "success": true,
+  "nextGame": {
+    "gameId": "5a11d709921a7ea69f44ff8926649124",
+    "homeTeam": "Cleveland Cavaliers",
+    "awayTeam": "Chicago Bulls",
+    "startTime": "2025-12-20T00:40:00.000Z",
+    "spread": -4.5,
+    "status": "upcoming",
+    "isCavaliersHome": true,
+    "spreadExplanation": "Cavaliers favored by 4.5 points"
+  }
+}
+```
+
 ## Implementation Status
 
-### ✅ Completed (Phase 1)
+### ✅ Completed (Phase 1-3)
+
+**Phase 1: Infrastructure**
 - **Backend Infrastructure**
   - NestJS application with modular architecture (Auth, Games, Bets, Database)
   - MongoDB connection with Mongoose
@@ -159,27 +224,58 @@ curl http://localhost:3001
   - MongoDB local installation tested
   - Both applications running and verified
   - Comprehensive setup documentation
+  - Makefile for easy development workflow
 
-### 🚧 Planned Features (Phases 2-7)
+**Phase 2: Data Models**
+- User, Game, and Bet schemas with Mongoose
+- Database indexes for performance and uniqueness
+- Comprehensive DTOs and interfaces
+- Enum types for selections and statuses
+- Timestamps on all models
+
+**Phase 3: Odds API Integration**
+- OddsApiService for fetching NBA odds from The Odds API
+- Automatic filtering for Cleveland Cavaliers games
+- Point spread extraction from bookmaker data
+- Game data storage with upsert (no duplicates)
+- Database retrieval methods for upcoming games
+- API quota tracking and error handling
+
+### 🚧 Planned Features (Phases 4-7)
 
 - 🔐 User authentication with next-auth
-- 🏀 Fetch next Cleveland Cavaliers game odds from The Odds API
 - 💰 Place bets on point spreads
 - 📊 View your betting history
 - ⚡ Admin settlement of bets with automatic point awards
 - 🎯 Win 100 points for each correct bet
 
-## Planned API Endpoints
+## API Endpoints
 
-### Games
+### Available Test Endpoints (Phase 3)
+
+These endpoints are currently available for testing the Odds API integration:
+
+**Odds API Testing:**
+- `GET /test-odds` - Test raw Odds API connection and fetch NBA games
+- `GET /test-next-game` - Fetch next Cavaliers game from Odds API (not stored)
+- `GET /test-all-games` - Fetch all upcoming Cavaliers games from Odds API
+
+**Game Storage Testing:**
+- `GET /sync-next-game` - Fetch and store next Cavaliers game to database
+- `GET /sync-all-games` - Fetch and store all Cavaliers games to database
+- `GET /get-games` - Retrieve all upcoming games from database
+
+### Planned API Endpoints (Phase 4+)
+
+**Games:**
 - `GET /games/next` - Get the next Cavaliers game and odds
 - `POST /games/next` - Fetch and store next game from Odds API (authenticated)
 
-### Bets
+**Bets:**
 - `POST /bets` - Place a bet (authenticated)
 - `GET /bets` - Get user's bets (authenticated)
 
-### Admin
+**Admin:**
 - `POST /games/:gameId/settle` - Settle bets with final scores (admin only)
 
 ---
@@ -258,30 +354,48 @@ This project is broken into phases, with each phase containing multiple commits 
 
 ---
 
-### Phase 3: Backend - Odds API Integration
+### Phase 3: Backend - Odds API Integration ✅
 
-**Commit 3.1: Setup Odds API service**
-- [ ] Install axios or node-fetch
-- [ ] Create OddsApiService
-- [ ] Add API key configuration
-- [ ] Create basic API client with error handling
+**Commit 3.1: Setup Odds API service** ✅
+- [x] Install axios for HTTP requests
+- [x] Create OddsApiService with API client
+- [x] Add API key configuration via @nestjs/config
+- [x] Create OddsApiModule and export service
+- [x] Add error handling (401, 429, network errors)
+- [x] Implement API quota tracking via response headers
+- [x] Add health check method for API validation
+- [x] Create test endpoint for API verification
+- [x] Add comprehensive documentation (README.md)
 
-**Commit 3.2: Implement fetch next Cavaliers game**
-- [ ] Create method to fetch NBA odds from Odds API
-- [ ] Filter for Cleveland Cavaliers games
-- [ ] Find the next upcoming game
-- [ ] Parse point spread data from API response
+**Commit 3.2: Implement fetch next Cavaliers game** ✅
+- [x] Create GamesService with OddsApiService integration
+- [x] Implement fetchNbaOdds() in OddsApiService
+- [x] Filter for Cleveland Cavaliers games (home or away)
+- [x] Sort games by start time to find next game
+- [x] Parse point spread data from bookmakers
+- [x] Extract spread from Cavaliers' perspective
+- [x] Map API response to Game schema format
+- [x] Add fetchAllCavaliersGames() for multiple games
+- [x] Create test endpoints (test-next-game, test-all-games)
+- [x] Handle edge cases (no spreads, no games found)
 
-**Commit 3.3: Implement game data storage**
-- [ ] Create method to upsert game data to MongoDB
-- [ ] Map Odds API response to Game schema
-- [ ] Handle duplicate game prevention
-- [ ] Add logging for API calls
+**Commit 3.3: Implement game data storage** ✅
+- [x] Create upsertGame() method using findOneAndUpdate
+- [x] Implement syncNextCavaliersGame() to fetch and store
+- [x] Implement syncAllCavaliersGames() for bulk storage
+- [x] Add getUpcomingGames() to retrieve from database
+- [x] Handle duplicate prevention with unique gameId constraint
+- [x] Map Odds API response to Game schema
+- [x] Add comprehensive logging for all operations
+- [x] Create storage test endpoints (sync-next-game, sync-all-games, get-games)
+- [x] Test upsert functionality (prevents duplicates)
+- [x] Verify database queries and data retrieval
 
-**Commit 3.4: Create scheduled game updates (optional)**
-- [ ] Setup cron job to auto-fetch game data
-- [ ] Add game data refresh logic
-- [ ] Configure update intervals
+**Commit 3.4: Create Makefile for development** ✅
+- [x] Add make dev command for parallel frontend/backend startup
+- [x] Add make stop command to kill all services
+- [x] Add make install and make clean commands
+- [x] Update README Quick Start with Makefile usage
 
 ---
 

@@ -13,9 +13,6 @@ export class User {
 
   @Prop({ default: 0 })
   points: number;
-
-  @Prop()
-  password?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

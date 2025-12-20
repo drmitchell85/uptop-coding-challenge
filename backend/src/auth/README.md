@@ -13,7 +13,6 @@ The User schema represents authenticated users in the system.
   email: string;        // Required, unique - User's email address
   name?: string;        // Optional - User's display name
   points: number;       // Default: 0 - Points earned from winning bets
-  password?: string;    // Optional - Hashed password (for future auth)
   createdAt: Date;      // Auto-generated timestamp
   updatedAt: Date;      // Auto-updated timestamp
 }
@@ -67,14 +66,12 @@ Used when creating a new user:
 {
   email: string;
   name?: string;
-  password?: string;
 }
 ```
 
 ## Future Enhancements
 
-- Add password hashing with bcrypt
-- Implement JWT authentication
+- Integrate with next-auth for authentication
 - Add user roles (admin, user)
-- Add email verification
-- Add password reset functionality
+- Add user profile management
+- Add user statistics and leaderboards
