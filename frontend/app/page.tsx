@@ -3,12 +3,15 @@
 import { useSession } from 'next-auth/react';
 import { Header } from '@/components/layout/Header';
 import { GameCard } from '@/components/games/GameCard';
+import { BetForm } from '@/components/bets/BetForm';
 import { useNextGame } from '@/lib/hooks/useGames';
+import { useBets } from '@/lib/hooks/useBets';
 import Link from 'next/link';
 
 export default function Home() {
   const { data: session, status } = useSession();
   const { game, loading: gameLoading, error: gameError } = useNextGame();
+  const { refetch: refetchBets } = useBets();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -119,10 +122,22 @@ export default function Home() {
                       <span className="mr-2">🎯</span>
                       Place Your Bet
                     </h2>
-                    <div className="text-center py-8 text-gray-500">
-                      <p className="text-sm">Betting form coming in Phase 6.3</p>
-                      <p className="text-xs mt-2">Will allow: Team selection, bet submission</p>
-                    </div>
+
+                    {gameLoading ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <p className="text-sm">Loading...</p>
+                      </div>
+                    ) : game ? (
+                      <BetForm game={game} onBetPlaced={refetchBets} />
+                    ) : (
+                      <div className="text-center py-8">
+                        <div className="text-4xl mb-4">🎲</div>
+                        <p className="text-gray-600 font-medium mb-2">No game available</p>
+                        <p className="text-sm text-gray-500">
+                          Betting will be enabled when a game is scheduled
+                        </p>
+                      </div>
+                    )}
                   </section>
                 </div>
 

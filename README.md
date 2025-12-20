@@ -530,12 +530,16 @@ This project is broken into phases, with each phase containing multiple commits 
 - [x] Display spread explanation and visual indicators
 - [x] Highlight Cavaliers team with team colors
 
-**Commit 6.3: Create betting interface**
-- [ ] Create BetForm component
-- [ ] Add team selection UI (Cavaliers vs Opponent)
-- [ ] Implement bet submission
-- [ ] Add success/error notifications
-- [ ] Disable betting after user has placed bet
+**Commit 6.3: Create betting interface** ✅
+- [x] Create BetForm component
+- [x] Add team selection UI (Cavaliers vs Opponent)
+- [x] Implement bet submission using useCreateBet hook
+- [x] Add success/error notifications with animations
+- [x] Disable betting after user has placed bet
+- [x] Show existing bet details if user already bet on game
+- [x] Add visual feedback with custom radio buttons
+- [x] Display spread information for each team option
+- [x] Include unauthenticated state handling
 
 **Commit 6.4: Display user's bets**
 - [ ] Create BetsList component
