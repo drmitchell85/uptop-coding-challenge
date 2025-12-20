@@ -1,8 +1,15 @@
+import { IsNumber, Min } from 'class-validator';
+
 /**
  * DTO for settling a game with final scores
  */
 export class SettleGameDto {
+  @IsNumber()
+  @Min(0)
   finalHomeScore: number;
+
+  @IsNumber()
+  @Min(0)
   finalAwayScore: number;
 }
 
