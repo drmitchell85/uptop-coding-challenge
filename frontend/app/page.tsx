@@ -2,10 +2,13 @@
 
 import { useSession } from 'next-auth/react';
 import { Header } from '@/components/layout/Header';
+import { GameCard } from '@/components/games/GameCard';
+import { useNextGame } from '@/lib/hooks/useGames';
 import Link from 'next/link';
 
 export default function Home() {
   const { data: session, status } = useSession();
+  const { game, loading: gameLoading, error: gameError } = useNextGame();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -87,10 +90,27 @@ export default function Home() {
                       <span className="mr-2">🏀</span>
                       Next Game
                     </h2>
-                    <div className="text-center py-8 text-gray-500">
-                      <p className="text-sm">Game display coming in Phase 6.2</p>
-                      <p className="text-xs mt-2">Will show: Teams, start time, point spread</p>
-                    </div>
+
+                    {gameLoading ? (
+                      <div className="text-center py-12">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                        <p className="text-gray-600">Loading game data...</p>
+                      </div>
+                    ) : gameError ? (
+                      <div className="text-center py-12">
+                        <div className="text-4xl mb-4">⚠️</div>
+                        <p className="text-red-600 font-medium mb-2">Error loading game</p>
+                        <p className="text-sm text-gray-600">{gameError}</p>
+                      </div>
+                    ) : game ? (
+                      <GameCard game={game} />
+                    ) : (
+                      <div className="text-center py-12">
+                        <div className="text-4xl mb-4">📅</div>
+                        <p className="text-gray-600 font-medium mb-2">No upcoming games</p>
+                        <p className="text-sm text-gray-500">Check back soon for the next Cavaliers game!</p>
+                      </div>
+                    )}
                   </section>
 
                   {/* Betting Interface Section - Phase 6.3 */}

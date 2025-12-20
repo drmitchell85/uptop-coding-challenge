@@ -520,11 +520,15 @@ This project is broken into phases, with each phase containing multiple commits 
 - [x] Add quick stats section for user metrics
 - [x] Implement responsive design for mobile/tablet/desktop
 
-**Commit 6.2: Implement game display**
-- [ ] Create GameCard component
-- [ ] Fetch and display next game data
-- [ ] Show teams, start time, and point spread
-- [ ] Format dates and odds properly
+**Commit 6.2: Implement game display** ✅
+- [x] Create GameCard component
+- [x] Fetch and display next game data using useNextGame hook
+- [x] Show teams, start time, and point spread
+- [x] Format dates and odds properly with date-fns
+- [x] Add Cavaliers branding colors (wine and gold) to Tailwind config
+- [x] Implement loading, error, and empty states
+- [x] Display spread explanation and visual indicators
+- [x] Highlight Cavaliers team with team colors
 
 **Commit 6.3: Create betting interface**
 - [ ] Create BetForm component
