@@ -401,18 +401,25 @@ This project is broken into phases, with each phase containing multiple commits 
 
 ### Phase 4: Backend - Authentication & Core API
 
-**Commit 4.1: Setup authentication middleware**
-- [ ] Install passport and JWT dependencies
-- [ ] Create auth guard for protected routes
-- [ ] Setup JWT validation
-- [ ] Create admin role guard
+**Commit 4.1: Setup authentication middleware** ✅
+- [x] Install passport and JWT dependencies
+- [x] Create auth guard for protected routes
+- [x] Setup JWT validation
+- [x] Create admin role guard
+- [x] Add UserRole enum to User schema
+- [x] Create JwtStrategy for token validation
+- [x] Configure JwtModule with environment-based secrets
+- [x] Create test endpoints for authentication
+- [x] Test all guards (JWT auth and admin role)
 
-**Commit 4.2: Implement Games endpoints**
-- [ ] Create GamesController
-- [ ] Implement GET /games/next endpoint
-- [ ] Implement POST /games/next endpoint (authenticated)
-- [ ] Add request/response DTOs
-- [ ] Add error handling
+**Commit 4.2: Implement Games endpoints** ✅
+- [x] Create GamesController
+- [x] Implement GET /games/next endpoint (public)
+- [x] Implement POST /games/next endpoint (authenticated)
+- [x] Add request/response DTOs (GameResponseDto)
+- [x] Add error handling for API failures
+- [x] Add spread explanation helper
+- [x] Test both endpoints (public and authenticated)
 
 **Commit 4.3: Implement Bets endpoints**
 - [ ] Create BetsController
